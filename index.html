@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#16a34a">
+<title>Smart Irrigation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; padding: 16px; background: #f6f7f8; color: #1a1a1a; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    max-width: 980px; margin: 0 auto;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px 0; }
+  h2 { font-size: 14px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; font-weight: 600; }
+  .subtitle { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05); margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+  .relay {
+    background: #fff; border-radius: 10px; padding: 12px; text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+  }
+  .relay.on { background: #dcfce7; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 2px #16a34a; }
+  .relay.off { background: #fff; }
+  .relay.unknown { background: #fef3c7; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px #f59e0b; }
+  .relay .name { font-weight: 600; font-size: 13px; }
+  .relay .state { font-size: 11px; color: #6b7280; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .relay.on .state { color: #16a34a; }
+  button {
+    background: #1a1a1a; color: white; border: none; padding: 10px 14px; border-radius: 8px;
+    font-size: 13px; cursor: pointer; font-weight: 500; transition: opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.danger { background: #dc2626; }
+  button.warn { background: #f59e0b; }
+  button.success { background: #16a34a; }
+  button.ghost { background: #fff; color: #1a1a1a; box-shadow: 0 0 0 1px #d1d5db; }
+  button.small { padding: 6px 10px; font-size: 12px; }
+  button.wide { width: 100%; }
+  select, input {
+    padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: #fff;
+    width: 100%;
+  }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pill.skip, .pill.paused { background: #dbeafe; color: #1e40af; }
+  .pill.normal { background: #e0e7ff; color: #4338ca; }
+  .pill.reduced { background: #fef3c7; color: #92400e; }
+  .pill.extended { background: #fee2e2; color: #991b1b; }
+  .pill.success { background: #dcfce7; color: #166534; }
+  .pill.failure, .pill.error { background: #fee2e2; color: #991b1b; }
+  .pill.in_progress, .pill.queued { background: #fef3c7; color: #92400e; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #f3f4f6; }
+  th { font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  td a { color: #2563eb; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .muted { color: #6b7280; font-size: 12px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.2s; max-width: 90%; }
+  .toast.show { opacity: 1; }
+  .toast.error { background: #dc2626; }
+  .toast.success { background: #16a34a; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #d1d5db; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .needs-setup { padding: 16px; background: #fef3c7; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div id="setup" style="display:none">
+  <div class="card needs-setup">
+    <h1>⚙️ Setup</h1>
+    <p class="muted">Primeira vez? Cola as credenciais — ficam só no <strong>localStorage do teu browser</strong>, não saem daqui.</p>
+    <div style="margin: 12px 0">
+      <label class="muted">Shelly auth_key</label>
+      <input type="password" id="setup-shelly" placeholder="MTI5...">
+    </div>
+    <div style="margin: 12px 0">
+      <label class="muted">GitHub PAT (scopes: repo, workflow)</label>
+      <input type="password" id="setup-github" placeholder="ghp_...">
+    </div>
+    <button class="wide" onclick="saveSetup()">Guardar e entrar</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 4px">
+    <div>
+      <h1>🌱 Smart Irrigation</h1>
+      <p class="subtitle">Esposende · <span id="paused-indicator"><span class="spinner"></span></span></p>
+    </div>
+    <button class="ghost small" onclick="refreshAll()" id="refresh-btn">↻</button>
+  </div>
+
+  <h2>Estado dos relés <span id="last-fetch" class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal"></span></h2>
+  <div class="grid-4" id="relays"></div>
+
+  <h2>Ações rápidas</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom: 8px">
+      <button class="danger" onclick="stopAll()" style="flex:1">⏹ STOP ALL</button>
+      <button class="warn" onclick="togglePause()" id="pause-btn" style="flex:1">⏸ ...</button>
+    </div>
+    <button class="success wide" onclick="runNow()">▶️ Disparar run agora (workflow)</button>
+  </div>
+
+  <h2>Forçar regar uma zona</h2>
+  <div class="card">
+    <div class="grid-2" style="margin-bottom: 8px">
+      <select id="zone-pick">
+        <option value="oliveira">Oliveira (ch0)</option>
+        <option value="norte">Norte (ch1)</option>
+        <option value="entrada">Entrada (ch0)</option>
+        <option value="cozinha">Cozinha (ch1)</option>
+      </select>
+      <select id="dur-pick">
+        <option value="300">5 min</option>
+        <option value="600">10 min</option>
+        <option value="900" selected>15 min</option>
+        <option value="1200">20 min</option>
+        <option value="1350">22.5 min</option>
+        <option value="1500">25 min (max)</option>
+      </select>
+    </div>
+    <button class="wide success" onclick="forceWater()">💧 Ligar zona</button>
+    <p class="muted" style="margin: 8px 0 0 0">Channel 1 (norte/cozinha) usa sempre auto-off de 15 min.</p>
+  </div>
+
+  <h2>Últimos runs do GitHub Actions</h2>
+  <div class="card" style="padding: 4px 14px">
+    <table>
+      <thead><tr><th>Quando</th><th>Status</th><th>Duração</th><th>Trigger</th></tr></thead>
+      <tbody id="runs-tbody"><tr><td colspan="4" class="muted">A carregar…</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Log de decisões (últimas 30)</h2>
+  <div class="card" style="padding: 4px 14px">
+    <table>
+      <thead><tr><th>Data</th><th>Decisão</th><th>Chuva 48h</th><th>et0</th><th>Dias secos</th><th>Total</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="6" class="muted">A carregar…</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Settings</h2>
+  <div class="card">
+    <button class="ghost small" onclick="resetSecrets()">🔑 Limpar credenciais</button>
+    <p class="muted" style="margin-top: 10px">Repo: <a href="https://github.com/JAfonsoSantos/smart-irrigation" target="_blank">JAfonsoSantos/smart-irrigation</a> · Cron: 06:00 UTC diário</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const REPO = "JAfonsoSantos/smart-irrigation";
+const SHELLY_BASE = "https://shelly-46-eu.shelly.cloud";
+const ZONES = [
+  { name: "oliveira", device: "c8c9a379ff9d", channel: 0, useTimer: true },
+  { name: "norte",    device: "c8c9a379ff9d", channel: 1, useTimer: false },
+  { name: "entrada",  device: "c8c9a37a09c4", channel: 0, useTimer: true },
+  { name: "cozinha",  device: "c8c9a37a09c4", channel: 1, useTimer: false }
+];
+
+let SHELLY_KEY = localStorage.getItem("irrig_shelly") || "";
+let GH_TOKEN = localStorage.getItem("irrig_github") || "";
+let pausedState = null;
+let pauseFlagSha = null;
+
+// ===== Shelly =====
+async function shellyCall(path, params) {
+  const body = new URLSearchParams({ auth_key: SHELLY_KEY, ...params });
+  const r = await fetch(SHELLY_BASE + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  return r.json();
+}
+
+async function refreshRelays() {
+  const devices = [...new Set(ZONES.map(z => z.device))];
+  const states = {};
+  for (const id of devices) {
+    try {
+      const r = await shellyCall("/device/status", { id });
+      const relays = r?.data?.device_status?.relays || [];
+      states[id] = relays.map(x => x?.ison);
+    } catch (e) {
+      states[id] = [null, null];
+    }
+  }
+  const html = ZONES.map(z => {
+    const state = states[z.device]?.[z.channel];
+    const cls = state === true ? "on" : state === false ? "off" : "unknown";
+    const txt = state === true ? "ON" : state === false ? "OFF" : "?";
+    return `<div class="relay ${cls}"><div class="name">${z.name}</div><div class="state">${txt}</div></div>`;
+  }).join("");
+  document.getElementById("relays").innerHTML = html;
+  document.getElementById("last-fetch").textContent = "· " + new Date().toLocaleTimeString("pt-PT", {hour:"2-digit", minute:"2-digit"});
+}
+
+async function stopAll() {
+  if (!confirm("STOP — desligar todos os 4 relés?")) return;
+  toast("A desligar todos os relés…");
+  for (const z of ZONES) {
+    try { await shellyCall("/device/relay/control", { id: z.device, channel: z.channel, turn: "off" }); }
+    catch (e) { console.error(z.name, e); }
+  }
+  await new Promise(r => setTimeout(r, 1500));
+  await refreshRelays();
+  toast("Stop enviado ✓", "success");
+}
+
+async function forceWater() {
+  const name = document.getElementById("zone-pick").value;
+  const duration = parseInt(document.getElementById("dur-pick").value);
+  const z = ZONES.find(x => x.name === name);
+  if (!z) return;
+  if (!confirm(`Ligar ${name} por ${Math.round(duration/60)} min?`)) return;
+  const params = { id: z.device, channel: z.channel, turn: "on" };
+  if (z.useTimer) params.timer = duration;
+  try {
+    const r = await shellyCall("/device/relay/control", params);
+    if (r.isok) {
+      toast(`${name} ligado ✓`, "success");
+      setTimeout(refreshRelays, 1500);
+    } else {
+      toast("Erro: " + JSON.stringify(r.errors || r), "error");
+    }
+  } catch (e) { toast("Falha: " + e.message, "error"); }
+}
+
+// ===== GitHub =====
+async function ghFetch(path, opts = {}) {
+  return fetch("https://api.github.com" + path, {
+    ...opts,
+    headers: {
+      "Authorization": "Bearer " + GH_TOKEN,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(opts.headers || {})
+    }
+  });
+}
+
+async function getFile(filepath) {
+  const r = await ghFetch(`/repos/${REPO}/contents/${filepath}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error("GH " + r.status);
+  return r.json();
+}
+
+async function getPauseState() {
+  try {
+    const f = await getFile("paused.flag");
+    if (f) { pauseFlagSha = f.sha; pausedState = true; }
+    else { pauseFlagSha = null; pausedState = false; }
+  } catch (e) { pausedState = false; }
+  updatePauseUI();
+}
+
+function updatePauseUI() {
+  const btn = document.getElementById("pause-btn");
+  const ind = document.getElementById("paused-indicator");
+  if (pausedState === null) {
+    btn.textContent = "⏸ ..."; ind.innerHTML = '<span class="spinner"></span>';
+  } else if (pausedState) {
+    btn.textContent = "▶️ Retomar cron";
+    btn.classList.remove("warn"); btn.classList.add("success");
+    ind.innerHTML = '<span class="pill paused">Cron pausado</span>';
+  } else {
+    btn.textContent = "⏸ Pausar cron";
+    btn.classList.remove("success"); btn.classList.add("warn");
+    ind.innerHTML = '<span class="pill success">Cron ativo</span>';
+  }
+}
+
+async function togglePause() {
+  const btn = document.getElementById("pause-btn");
+  btn.disabled = true;
+  const oldState = pausedState;
+  try {
+    if (oldState) {
+      const r = await ghFetch(`/repos/${REPO}/contents/paused.flag`, {
+        method: "DELETE",
+        body: JSON.stringify({ message: "dashboard: resume cron", sha: pauseFlagSha })
+      });
+      if (!r.ok) throw new Error("delete " + r.status);
+      toast("Cron retomado ✓", "success");
+    } else {
+      const content = btoa(`Paused via dashboard at ${new Date().toISOString()}\n`);
+      const r = await ghFetch(`/repos/${REPO}/contents/paused.flag`, {
+        method: "PUT",
+        body: JSON.stringify({ message: "dashboard: pause cron", content })
+      });
+      if (!r.ok) throw new Error("create " + r.status);
+      toast("Cron pausado ⏸", "success");
+    }
+    await getPauseState();
+  } catch (e) { toast("Erro: " + e.message, "error"); }
+  finally { btn.disabled = false; }
+}
+
+async function runNow() {
+  if (!confirm("Disparar uma run agora?")) return;
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/workflows/irrigation.yml/dispatches`, {
+      method: "POST", body: JSON.stringify({ ref: "main" })
+    });
+    if (r.status === 204) { toast("Run disparada ✓", "success"); setTimeout(loadRuns, 8000); }
+    else { const t = await r.text(); toast("Erro: " + t.slice(0,80), "error"); }
+  } catch (e) { toast("Falha: " + e.message, "error"); }
+}
+
+async function loadRuns() {
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/runs?per_page=10`);
+    if (!r.ok) throw new Error("status " + r.status);
+    const data = await r.json();
+    const rows = (data.workflow_runs || []).map(run => {
+      const start = new Date(run.run_started_at || run.created_at);
+      const dur = run.updated_at ? Math.round((new Date(run.updated_at) - start) / 60000) : "—";
+      const statusCls = run.conclusion || run.status || "queued";
+      return `<tr>
+        <td>${start.toLocaleString("pt-PT", {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"})}</td>
+        <td><span class="pill ${statusCls}">${run.conclusion || run.status}</span></td>
+        <td>${dur} min</td>
+        <td><a href="${run.html_url}" target="_blank">${run.event}</a></td>
+      </tr>`;
+    });
+    document.getElementById("runs-tbody").innerHTML = rows.join("") || '<tr><td colspan="4" class="muted">Sem runs ainda</td></tr>';
+  } catch (e) {
+    document.getElementById("runs-tbody").innerHTML = `<tr><td colspan="4" class="muted">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+async function loadLog() {
+  try {
+    const f = await getFile("irrigation-log.json");
+    if (!f || !f.content) {
+      document.getElementById("log-tbody").innerHTML = '<tr><td colspan="6" class="muted">Sem log ainda</td></tr>';
+      return;
+    }
+    const content = atob(f.content.replace(/\n/g, ""));
+    const entries = JSON.parse(content);
+    const latest = entries.slice(-30).reverse();
+    const rows = latest.map(e => {
+      const dec = (e.decision || "").toLowerCase();
+      return `<tr>
+        <td>${e.date} ${e.time || ""}</td>
+        <td><span class="pill ${dec}">${e.decision}</span></td>
+        <td>${e.rain_48h_mm ?? "—"}mm</td>
+        <td>${e.et0_mm ?? "—"}mm</td>
+        <td>${e.dry_days ?? "—"}</td>
+        <td>${e.total_duration_min ?? 0} min</td>
+      </tr>`;
+    });
+    document.getElementById("log-tbody").innerHTML = rows.join("");
+  } catch (e) {
+    document.getElementById("log-tbody").innerHTML = `<tr><td colspan="6" class="muted">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+// ===== Setup / lifecycle =====
+function saveSetup() {
+  const s = document.getElementById("setup-shelly").value.trim();
+  const g = document.getElementById("setup-github").value.trim();
+  if (!s || !g) return toast("Preenche os dois campos", "error");
+  SHELLY_KEY = s; GH_TOKEN = g;
+  localStorage.setItem("irrig_shelly", s);
+  localStorage.setItem("irrig_github", g);
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  refreshAll();
+}
+
+function resetSecrets() {
+  if (!confirm("Limpar credenciais?")) return;
+  localStorage.removeItem("irrig_shelly");
+  localStorage.removeItem("irrig_github");
+  location.reload();
+}
+
+function toast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+async function refreshAll() {
+  const btn = document.getElementById("refresh-btn");
+  btn.textContent = "⏳"; btn.disabled = true;
+  pausedState = null; updatePauseUI();
+  try {
+    await refreshRelays();
+    await getPauseState();
+    await loadRuns();
+    await loadLog();
+  } catch (e) { toast("Erro: " + e.message, "error"); }
+  btn.textContent = "↻"; btn.disabled = false;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (!SHELLY_KEY || !GH_TOKEN) {
+    document.getElementById("setup").style.display = "block";
+  } else {
+    document.getElementById("app").style.display = "block";
+    refreshAll();
+    setInterval(refreshRelays, 30000);
+  }
+});
+</script>
+</body>
+</html>
