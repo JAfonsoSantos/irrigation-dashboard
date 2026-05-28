@@ -189,14 +189,19 @@ async function shellyCall(path, params) {
 async function refreshRelays() {
   const devices = [...new Set(ZONES.map(z => z.device))];
   const states = {};
-  for (const id of devices) {
-    try {
-      const r = await shellyCall("/device/status", { id });
-      const relays = r?.data?.device_status?.relays || [];
-      states[id] = relays.map(x => x?.ison);
-    } catch (e) {
-      states[id] = [null, null];
+  for (let i = 0; i < devices.length; i++) {
+    const id = devices[i];
+    if (i > 0) await new Promise(r => setTimeout(r, 600));  // spacing to avoid rate limit
+    let relays = [];
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const r = await shellyCall("/device/status", { id });
+        relays = r?.data?.device_status?.relays || [];
+        if (relays.length > 0) break;
+      } catch (e) { /* retry */ }
+      if (attempt < 2) await new Promise(r => setTimeout(r, 800));
     }
+    states[id] = relays.length > 0 ? relays.map(x => x?.ison) : [null, null];
   }
   const html = ZONES.map(z => {
     const state = states[z.device]?.[z.channel];
