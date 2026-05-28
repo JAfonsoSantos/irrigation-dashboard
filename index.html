@@ -68,14 +68,26 @@
   .matrix .day {
     background: #fff; border-radius: 8px; padding: 10px 6px; text-align: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05);
-    min-height: 90px;
+    min-height: 96px;
+    cursor: pointer;
   }
+  .matrix .day:hover { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px #9ca3af; }
   .matrix .day.today { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 2px #1a1a1a; }
   .matrix .day.future { opacity: 0.92; }
+  .matrix .day.has-data { background: #fafafa; }
   .matrix .day-name { font-size: 10px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
   .matrix .day-num { font-size: 18px; font-weight: 600; line-height: 1; margin: 2px 0 6px 0; }
   .matrix .day .pill { font-size: 9px; padding: 1px 5px; }
   .matrix .day .dur { font-size: 10px; color: #6b7280; margin-top: 4px; }
+  .matrix .day .slot-count { font-size: 9px; color: #6b7280; margin-top: 2px; }
+  .day-detail { margin-top: 8px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #1a1a1a; display: none; }
+  .day-detail.show { display: block; }
+  .day-detail h3 { font-size: 14px; margin: 0 0 8px 0; }
+  .day-detail .slot-block { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+  .day-detail .slot-block:last-child { border-bottom: none; }
+  .day-detail .zone-line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
+  .day-detail .zone-line .ok { color: #16a34a; }
+  .day-detail .zone-line .ko { color: #dc2626; }
 
   /* Schedule slots */
   .slot-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
@@ -145,9 +157,10 @@
     <button class="success wide" onclick="runNow()">▶️ Disparar run agora (workflow)</button>
   </div>
 
-  <h2>Próximos 7 dias <span class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal">· ⬜ futuro · 🟦 hoje · histórico real à esquerda</span></h2>
+  <h2>7 dias <span class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal">· clica num dia para detalhes</span></h2>
   <div class="card" style="padding: 12px">
     <div class="matrix" id="matrix"><div class="muted">A carregar…</div></div>
+    <div class="day-detail" id="day-detail"></div>
   </div>
 
   <h2>Horários de rega</h2>
@@ -644,17 +657,18 @@ function decideForDay(rain_48h, rain_today, prob_today, et0, dry_days, month) {
   return { decision, ch0_sec: ch0 };
 }
 
+let matrixDays = [];  // populated by loadMatrix, used by openDay
+
 async function loadMatrix() {
   const root = document.getElementById("matrix");
+  document.getElementById("day-detail").classList.remove("show");
   root.innerHTML = '<div class="muted" style="grid-column:1/-1">A calcular previsão…</div>';
   try {
-    // Open-Meteo: 3 past + today + 3 future
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&past_days=7&forecast_days=4&timezone=Europe%2FLisbon`;
     const wRes = await fetch(url);
     const w = await wRes.json();
     const daily = w.daily;
     const dates = daily.time;
-    const todayIdx = dates.indexOf(dateKey(new Date()));
 
     // Group log entries by date
     const logByDate = {};
@@ -664,7 +678,9 @@ async function loadMatrix() {
     }
 
     const numSlotsPerDay = workflowCrons.length || 1;
+    matrixDays = [];
     const cells = [];
+
     for (let offset = -3; offset <= 3; offset++) {
       const day = new Date();
       day.setDate(day.getDate() + offset);
@@ -672,70 +688,61 @@ async function loadMatrix() {
       const wIdx = dates.indexOf(key);
       const isToday = offset === 0;
       const isPast = offset < 0;
-      const cls = isToday ? "today" : (isPast ? "past" : "future");
 
-      let pill = "", subline = "", durationLabel = "";
+      const dayInfo = { offset, key, day, isPast, isToday, entries: logByDate[key] || [], slots: [] };
 
-      if (isPast) {
-        // From log
-        const entries = logByDate[key] || [];
-        if (entries.length > 0) {
-          const total = entries.reduce((s, e) => s + (e.total_duration_min || 0), 0);
-          const lastDec = entries[entries.length - 1].decision || "—";
-          pill = `<span class="pill ${lastDec.toLowerCase()}">${lastDec}</span>`;
-          if (entries.length > 1) pill = `${entries.length}× ${pill}`;
-          durationLabel = `${Math.round(total)} min`;
-        } else {
-          pill = `<span class="pill predicted">—</span>`;
+      let pill = "", durationLabel = "", slotCount = "";
+
+      const entries = logByDate[key] || [];
+      const hasLog = entries.length > 0;
+
+      if (hasLog) {
+        const total = entries.reduce((s, e) => s + (e.total_duration_min || 0), 0);
+        const lastDec = entries[entries.length - 1].decision || "—";
+        pill = `<span class="pill ${lastDec.toLowerCase()}">${lastDec}</span>`;
+        durationLabel = `${Math.round(total)} min`;
+        slotCount = entries.length > 1 ? `${entries.length} slots` : `1 slot`;
+        dayInfo.slots = entries;
+      }
+
+      if (!isPast && wIdx >= 0) {
+        // Compute prediction (for today if no log, for future days)
+        const rain48 = (daily.precipitation_sum[wIdx-2] || 0) + (daily.precipitation_sum[wIdx-1] || 0);
+        const rainToday = daily.precipitation_sum[wIdx] || 0;
+        const probToday = daily.precipitation_probability_max[wIdx] || 0;
+        const et0 = daily.et0_fao_evapotranspiration[wIdx] || 0;
+        let dry = 0;
+        for (let i = wIdx - 1; i >= 0; i--) {
+          if ((daily.precipitation_sum[i] || 0) < 1) dry++; else break;
         }
-      } else {
-        // Today + future: compute prediction
-        if (wIdx >= 0) {
-          const rain48 = (daily.precipitation_sum[wIdx-2] || 0) + (daily.precipitation_sum[wIdx-1] || 0);
-          const rainToday = daily.precipitation_sum[wIdx] || 0;
-          const probToday = daily.precipitation_probability_max[wIdx] || 0;
-          const et0 = daily.et0_fao_evapotranspiration[wIdx] || 0;
-          // dry_days: count back from wIdx-1
-          let dry = 0;
-          for (let i = wIdx - 1; i >= 0; i--) {
-            if ((daily.precipitation_sum[i] || 0) < 1) dry++;
-            else break;
-          }
-          const month = day.getMonth() + 1;
-          const { decision, ch0_sec } = decideForDay(rain48, rainToday, probToday, et0, dry, month);
-
-          const ch0Min = ch0_sec / 60;
-          const ch1Min = 15;
-          const totalMinPerSlot = (decision === "SKIP") ? 0 : (2 * ch0Min + 2 * ch1Min);  // 2 ch0 zones, 2 ch1 zones
-          const totalMin = totalMinPerSlot * numSlotsPerDay;
-
-          // Override with actual log if today already ran
-          if (isToday) {
-            const entries = logByDate[key] || [];
-            if (entries.length > 0) {
-              const total = entries.reduce((s, e) => s + (e.total_duration_min || 0), 0);
-              const lastDec = entries[entries.length - 1].decision || decision;
-              pill = `<span class="pill ${lastDec.toLowerCase()}">${lastDec}</span>`;
-              durationLabel = `${Math.round(total)} min`;
-            } else {
-              pill = `<span class="pill ${decision.toLowerCase()}">${decision}</span>`;
-              durationLabel = `prev ${Math.round(totalMin)} min`;
-            }
-          } else {
-            pill = `<span class="pill ${decision.toLowerCase()}">${decision}</span>`;
-            durationLabel = `prev ${Math.round(totalMin)} min`;
-          }
-        } else {
-          pill = `<span class="pill predicted">?</span>`;
+        const month = day.getMonth() + 1;
+        const { decision, ch0_sec } = decideForDay(rain48, rainToday, probToday, et0, dry, month);
+        const ch0Min = ch0_sec / 60;
+        const ch1Min = 15;
+        const totalMinPerSlot = (decision === "SKIP") ? 0 : (2 * ch0Min + 2 * ch1Min);
+        dayInfo.prediction = {
+          decision, ch0Min, ch1Min, totalMinPerSlot,
+          numSlots: numSlotsPerDay, totalMin: totalMinPerSlot * numSlotsPerDay,
+          rain48: rain48.toFixed(1), rainToday: rainToday.toFixed(1), probToday, et0: et0.toFixed(2), dryDays: dry
+        };
+        if (!hasLog) {
+          pill = `<span class="pill ${decision.toLowerCase()}">${decision}</span>`;
+          durationLabel = `prev ${Math.round(totalMinPerSlot * numSlotsPerDay)} min`;
+          slotCount = numSlotsPerDay > 1 ? `${numSlotsPerDay} slots` : `1 slot`;
         }
       }
 
+      if (!pill) pill = `<span class="pill predicted">—</span>`;
+      matrixDays.push(dayInfo);
+
+      const cls = (isToday ? "today" : (isPast ? "past" : "future")) + (hasLog ? " has-data" : "");
       cells.push(`
-        <div class="day ${cls}">
+        <div class="day ${cls}" onclick="openDay(${matrixDays.length - 1})">
           <div class="day-name">${dayName(day)}</div>
           <div class="day-num">${day.getDate()}</div>
           ${pill}
           <div class="dur">${durationLabel}</div>
+          <div class="slot-count">${slotCount}</div>
         </div>
       `);
     }
@@ -743,6 +750,67 @@ async function loadMatrix() {
   } catch (e) {
     root.innerHTML = `<div class="muted" style="grid-column:1/-1">Erro: ${e.message}</div>`;
   }
+}
+
+function openDay(idx) {
+  const d = matrixDays[idx];
+  if (!d) return;
+  const detail = document.getElementById("day-detail");
+  const fullDate = d.day.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
+  let inner = `<h3>${fullDate}</h3>`;
+
+  if (d.slots.length > 0) {
+    inner += d.slots.map(e => {
+      const dec = (e.decision || "").toLowerCase();
+      const zonesHtml = (e.zones && Array.isArray(e.zones))
+        ? e.zones.map(z => `
+            <div class="zone-line">
+              <span>${z.name}<span class="muted"> (ch${z.channel})</span></span>
+              <span class="${z.completed ? 'ok' : 'ko'}">${z.duration_min} min ${z.completed ? '✓' : '⏹'}</span>
+            </div>`).join("")
+        : `<div class="muted">${e.zones_watered ? e.zones_watered.join(", ") : "—"}</div>`;
+      return `<div class="slot-block">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px">
+          <strong>${e.time || ""}</strong>
+          <span class="pill ${dec}">${e.decision}</span>
+        </div>
+        <div class="muted" style="font-size:11px; margin-bottom:6px">
+          chuva 48h: ${e.rain_48h_mm ?? '—'}mm · et0: ${e.et0_mm ?? '—'}mm · dias secos: ${e.dry_days ?? '—'}
+        </div>
+        ${zonesHtml}
+        <div style="margin-top:6px; font-size:12px"><strong>Total:</strong> ${e.total_duration_min || 0} min</div>
+        ${e.reason ? `<div class="muted" style="font-size:11px; margin-top:4px">${e.reason}</div>` : ''}
+      </div>`;
+    }).join("");
+  }
+
+  if (!d.isPast && d.prediction) {
+    const p = d.prediction;
+    const label = d.isToday && d.slots.length > 0 ? "Previsão alternativa (hoje já correu)" : (d.isToday ? "Previsto para hoje" : "Previsto");
+    inner += `<div class="slot-block" style="opacity: ${d.slots.length > 0 ? 0.7 : 1}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px">
+        <strong>${label}</strong>
+        <span class="pill ${p.decision.toLowerCase()}">${p.decision}</span>
+      </div>
+      <div class="muted" style="font-size:11px; margin-bottom:6px">
+        chuva 48h: ${p.rain48}mm · hoje: ${p.rainToday}mm · prob: ${p.probToday}% · et0: ${p.et0}mm · dias secos: ${p.dryDays}
+      </div>
+      ${p.decision !== "SKIP" ? `
+        <div class="zone-line"><span>oliveira (ch0)</span><span>${p.ch0Min.toFixed(1)} min</span></div>
+        <div class="zone-line"><span>norte (ch1)</span><span>${p.ch1Min} min</span></div>
+        <div class="zone-line"><span>entrada (ch0)</span><span>${p.ch0Min.toFixed(1)} min</span></div>
+        <div class="zone-line"><span>cozinha (ch1)</span><span>${p.ch1Min} min</span></div>
+        <div style="margin-top:6px; font-size:12px"><strong>Total/slot:</strong> ${p.totalMinPerSlot.toFixed(1)} min × ${p.numSlots} slot${p.numSlots > 1 ? 's' : ''} = ${p.totalMin.toFixed(0)} min</div>
+      ` : '<div class="muted">Sem rega prevista.</div>'}
+    </div>`;
+  }
+
+  if (d.slots.length === 0 && !d.prediction) {
+    inner += '<div class="muted">Sem dados.</div>';
+  }
+
+  detail.innerHTML = inner;
+  detail.classList.add("show");
 }
 
 // ============================================================================
