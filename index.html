@@ -63,6 +63,16 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .needs-setup { padding: 16px; background: #fef3c7; border-radius: 10px; }
 
+  /* Live banner */
+  .live-banner { padding: 12px 16px; border-radius: 10px; margin: 8px 0 12px 0; display: flex; align-items: center; gap: 12px; }
+  .live-banner.watering { background: #dcfce7; box-shadow: 0 0 0 2px #16a34a inset; }
+  .live-banner.running { background: #dbeafe; box-shadow: 0 0 0 2px #2563eb inset; }
+  .live-banner .pulse { width: 10px; height: 10px; border-radius: 50%; background: #16a34a; animation: pulse 1.2s ease-in-out infinite; }
+  .live-banner.running .pulse { background: #2563eb; }
+  .live-banner .text { font-weight: 600; }
+  .live-banner .sub { font-size: 12px; color: #4b5563; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+
   /* Matrix */
   .matrix { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
   .matrix .day {
@@ -144,6 +154,8 @@
       <button class="ghost small" onclick="doLogout()">Sair</button>
     </div>
   </div>
+
+  <div id="live-banner" style="display:none"></div>
 
   <h2>Estado dos relés <span id="last-fetch" class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal"></span></h2>
   <div class="grid-4" id="relays"></div>
@@ -241,6 +253,10 @@ let pausedState = null;
 let pauseFlagSha = null;
 let workflowSha = null;
 let workflowCrons = [];
+let currentRelayStates = {};   // device → [ison, ison]
+let activeRun = null;          // {id, started_at, ...} when in_progress
+let pollHandle = null;
+let pollIntervalMs = 30000;    // current poll rate
 
 // ============================================================================
 // Login gate
@@ -299,6 +315,7 @@ async function refreshRelays() {
     }
     states[id] = relays.length > 0 ? relays.map(x => x?.ison) : [null, null];
   }
+  currentRelayStates = states;
   const html = ZONES.map(z => {
     const state = states[z.device]?.[z.channel];
     const cls = state === true ? "on" : state === false ? "off" : "unknown";
@@ -306,7 +323,84 @@ async function refreshRelays() {
     return `<div class="relay ${cls}"><div class="name">${z.name}</div><div class="state">${txt}</div></div>`;
   }).join("");
   document.getElementById("relays").innerHTML = html;
-  document.getElementById("last-fetch").textContent = "· " + new Date().toLocaleTimeString("pt-PT", {hour:"2-digit", minute:"2-digit"});
+  document.getElementById("last-fetch").textContent = "· " + new Date().toLocaleTimeString("pt-PT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+  updateLiveBanner();
+  adjustPollRate();
+}
+
+function activeZoneName() {
+  for (const z of ZONES) {
+    if (currentRelayStates[z.device]?.[z.channel] === true) return z.name;
+  }
+  return null;
+}
+
+function fmtElapsed(startIso) {
+  const sec = Math.max(0, Math.round((Date.now() - new Date(startIso).getTime()) / 1000));
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}m ${String(s).padStart(2,"0")}s`;
+}
+
+function updateLiveBanner() {
+  const el = document.getElementById("live-banner");
+  const activeZone = activeZoneName();
+  if (activeZone) {
+    el.className = "live-banner watering";
+    el.style.display = "flex";
+    el.innerHTML = `
+      <span class="pulse"></span>
+      <div>
+        <div class="text">A regar: ${activeZone}</div>
+        <div class="sub">refresh a cada 5s</div>
+      </div>`;
+  } else if (activeRun) {
+    el.className = "live-banner running";
+    el.style.display = "flex";
+    el.innerHTML = `
+      <span class="pulse"></span>
+      <div>
+        <div class="text">Workflow em execução · ${fmtElapsed(activeRun.run_started_at || activeRun.created_at)}</div>
+        <div class="sub">refresh a cada 5s · <a href="${activeRun.html_url}" target="_blank">ver logs</a></div>
+      </div>`;
+  } else {
+    el.style.display = "none";
+    el.innerHTML = "";
+  }
+}
+
+function adjustPollRate() {
+  // Faster polling if any relay is ON OR a workflow is in progress
+  const fast = activeZoneName() || activeRun;
+  const target = fast ? 5000 : 30000;
+  if (target !== pollIntervalMs) {
+    pollIntervalMs = target;
+    if (pollHandle) clearInterval(pollHandle);
+    pollHandle = setInterval(pollTick, pollIntervalMs);
+  }
+}
+
+async function pollTick() {
+  await refreshRelays();
+  await checkActiveRun();
+  updateLiveBanner();
+  // Refresh logs/runs occasionally when in fast mode (every ~6 ticks = 30s)
+  if (pollIntervalMs < 30000) {
+    pollTick.counter = (pollTick.counter || 0) + 1;
+    if (pollTick.counter % 6 === 0) {
+      loadRuns();
+      loadLog();
+    }
+  }
+}
+
+async function checkActiveRun() {
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/runs?per_page=5&status=in_progress`);
+    if (!r.ok) return;
+    const data = await r.json();
+    const inProg = (data.workflow_runs || []).find(x => x.status === "in_progress" || x.status === "queued");
+    activeRun = inProg || null;
+  } catch (e) {}
 }
 
 async function stopAll() {
@@ -410,7 +504,15 @@ async function runNow() {
     const r = await ghFetch(`/repos/${REPO}/actions/workflows/irrigation.yml/dispatches`, {
       method: "POST", body: JSON.stringify({ ref: "main" })
     });
-    if (r.status === 204) { toast("Run disparada ✓", "success"); setTimeout(loadRuns, 8000); }
+    if (r.status === 204) {
+      toast("Run disparada ✓", "success");
+      // Force fast polling immediately
+      activeRun = { run_started_at: new Date().toISOString(), html_url: `https://github.com/${REPO}/actions`, status: "queued" };
+      updateLiveBanner();
+      adjustPollRate();
+      setTimeout(() => { loadRuns(); checkActiveRun(); }, 4000);
+      setTimeout(() => { loadRuns(); checkActiveRun(); refreshRelays(); }, 10000);
+    }
     else { toast("Erro: " + r.status, "error"); }
   } catch (e) { toast("Falha: " + e.message, "error"); }
 }
@@ -850,9 +952,12 @@ async function refreshAll() {
     await refreshRelays();
     await getPauseState();
     await loadRuns();
+    await checkActiveRun();
     await loadLog();
     await loadSchedule();
     await loadMatrix();
+    updateLiveBanner();
+    adjustPollRate();
   } catch (e) { toast("Erro: " + e.message, "error"); }
   btn.textContent = "↻"; btn.disabled = false;
 }
@@ -863,7 +968,7 @@ function enterApp() {
   } else {
     document.getElementById("app").style.display = "block";
     refreshAll();
-    setInterval(refreshRelays, 30000);
+    pollHandle = setInterval(pollTick, pollIntervalMs);
   }
 }
 
