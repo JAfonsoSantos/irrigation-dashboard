@@ -10,12 +10,14 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
-<title>Rega</title>
+<title>Rega Esposende</title>
 <style>
 :root{--g:#16a34a;--gd:#15803d;--gl:#dcfce7;--gll:#f0fdf4;--bg:#f6f7f8;--card:#fff;--text:#111827;--mut:#6b7280;--mut2:#9ca3af;--bor:#e5e7eb;--bor2:#d1d5db;--red:#dc2626;--ylw:#f59e0b;--blu:#185FA5;--blul:#e0f2fe;color-scheme:light;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;}
-body{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:80px;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;height:100%;}
+body{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;}
+#app{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 button{font-family:inherit;cursor:pointer;}
 input,select{font-family:inherit;}
 
@@ -32,7 +34,7 @@ input,select{font-family:inherit;}
 .brand .logo{font-size:42px;line-height:1;}
 .brand .name{font-size:16px;font-weight:600;margin-top:8px;}
 
-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 8px;}
+header{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 14px) 20px 10px;background:var(--bg);flex-shrink:0;}
 header h1{margin:0;font-size:22px;font-weight:600;display:flex;align-items:center;gap:8px;}
 header h1 .drop{color:var(--g);font-size:26px;}
 .icon-btn{background:transparent;border:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:18px;}
@@ -157,7 +159,7 @@ header h1 .drop{color:var(--g);font-size:26px;}
 .slot-add input{flex:1;border:1px solid var(--bor);border-radius:10px;padding:10px;font-size:15px;background:#fafbfc;}
 .slot-add button{background:var(--g);color:white;border:none;border-radius:10px;padding:0 14px;font-weight:600;}
 
-nav.tabs{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--bor);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;z-index:50;}
+nav.tabs{background:white;border-top:1px solid var(--bor);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));flex-shrink:0;}
 nav.tabs button{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);padding:6px 16px;border-radius:8px;flex:1;}
 nav.tabs button .ico{font-size:22px;}
 nav.tabs button.active{color:var(--g);}
@@ -203,7 +205,7 @@ nav.tabs button:active{background:var(--gll);}
 
 <div id="app" class="hidden">
   <header>
-    <h1><span class="drop">💧</span>rega</h1>
+    <h1><span class="drop">💧</span>Rega Esposende</h1>
     <div style="display:flex;gap:4px;">
       <button class="icon-btn" id="refresh-btn" onclick="refreshAll()" aria-label="Atualizar">↻</button>
     </div>
@@ -211,6 +213,7 @@ nav.tabs button:active{background:var(--gll);}
 
   <div id="banners"></div>
 
+  <div class="scroll-area">
   <div class="view active" id="view-home">
     <div class="cards" id="cards-container">
       <div class="empty"><span class="spinner"></span> a carregar…</div>
@@ -256,8 +259,9 @@ nav.tabs button:active{background:var(--gll);}
       <div class="set-row"><div class="lbl">Disparar run já</div><button class="btn-ghost" onclick="dispatchNow()" style="color:var(--g);">disparar</button></div>
       <div class="set-row"><div class="lbl">Limpar credenciais</div><button class="btn-ghost" onclick="clearCreds()" style="color:var(--red);">limpar</button></div>
       <div class="set-row"><div class="lbl">Sair</div><button class="btn-ghost" onclick="doLogout()">sair</button></div>
-      <div class="muted center" style="font-size:11px;margin-top:24px;"><a href="https://github.com/JAfonsoSantos/smart-irrigation" target="_blank" style="color:var(--mut);">smart-irrigation</a> · v2</div>
+      <div class="muted center" style="font-size:11px;margin-top:24px;"><a href="https://github.com/JAfonsoSantos/smart-irrigation" target="_blank" style="color:var(--mut);">smart-irrigation</a> · v2.1</div>
     </div>
+  </div>
   </div>
 
   <nav class="tabs">
@@ -275,9 +279,9 @@ const WORKER_REPO = "JAfonsoSantos/smart-irrigation";
 const SHELLY_BASE = "https://shelly-46-eu.shelly.cloud";
 const LAT = 41.5463, LON = -8.7882;
 const ZONES = [
-  { name: "norte",    label: "Norte",    device: "c8c9a379ff9d", channel: 1, useTimer: false, fixed: true  },
+  { name: "norte",    label: "Norte",    device: "c8c9a379ff9d", channel: 1, useTimer: false, fixed: false },
   { name: "oliveira", label: "Oliveira", device: "c8c9a379ff9d", channel: 0, useTimer: true,  fixed: false },
-  { name: "cozinha",  label: "Cozinha",  device: "c8c9a37a09c4", channel: 1, useTimer: false, fixed: true  },
+  { name: "cozinha",  label: "Cozinha",  device: "c8c9a37a09c4", channel: 1, useTimer: false, fixed: false },
   { name: "entrada",  label: "Entrada",  device: "c8c9a37a09c4", channel: 0, useTimer: true,  fixed: false },
 ];
 const AUTH_HASH = "846d762664daa0049c8c8648afb26420383e1d5525d8d10b9c45db86051649d8";
@@ -298,8 +302,8 @@ let detailContext = null;
 let editState = null;
 
 async function sha256(t){const b=new TextEncoder().encode(t);const h=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-async function doLogin(){const u=document.getElementById("login-user").value;const p=document.getElementById("login-pass").value;const h=await sha256(u+":"+p);if(h===AUTH_HASH){sessionStorage.setItem("auth_ok","1");document.getElementById("gate-login").classList.add("hidden");enterApp();}else{toast("Credenciais erradas","error");}}
-function doLogout(){sessionStorage.removeItem("auth_ok");location.reload();}
+async function doLogin(){const u=document.getElementById("login-user").value;const p=document.getElementById("login-pass").value;const h=await sha256(u+":"+p);if(h===AUTH_HASH){localStorage.setItem("auth_ok","1");document.getElementById("gate-login").classList.add("hidden");enterApp();}else{toast("Credenciais erradas","error");}}
+function doLogout(){localStorage.removeItem("auth_ok");location.reload();}
 function saveSetup(){const s=document.getElementById("setup-shelly").value.trim();const g=document.getElementById("setup-github").value.trim();if(!s||!g)return toast("Preenche ambos","error");SHELLY_KEY=s;GH_TOKEN=g;localStorage.setItem("irrig_shelly",s);localStorage.setItem("irrig_github",g);document.getElementById("gate-setup").classList.add("hidden");enterApp();}
 function clearCreds(){if(!confirm("Limpar credenciais?"))return;localStorage.removeItem("irrig_shelly");localStorage.removeItem("irrig_github");location.reload();}
 
@@ -337,8 +341,9 @@ async function loadPause(){try{const f=await ghGetFile(WORKER_REPO,"paused.flag"
 async function togglePause(){const btn=document.getElementById("pause-btn");btn.disabled=true;try{if(pausedState){const r=await ghFetch(`/repos/${WORKER_REPO}/contents/paused.flag`,{method:"DELETE",body:JSON.stringify({message:"dashboard: resume",sha:pauseFlagSha})});if(!r.ok)throw new Error(r.status);toast("Cron retomado","success");}else{const c=btoa(`Paused at ${new Date().toISOString()}\n`);const r=await ghFetch(`/repos/${WORKER_REPO}/contents/paused.flag`,{method:"PUT",body:JSON.stringify({message:"dashboard: pause",content:c})});if(!r.ok)throw new Error(r.status);toast("Cron pausado","success");}await loadPause();renderSettings();}catch(e){toast("Erro: "+e.message,"error");}finally{btn.disabled=false;}}
 async function dispatchNow(){if(!confirm("Disparar uma rega agora?"))return;try{const r=await ghFetch(`/repos/${WORKER_REPO}/actions/workflows/irrigation.yml/dispatches`,{method:"POST",body:JSON.stringify({ref:"main"})});if(r.status===204)toast("Rega disparada","success");else toast("Erro: "+r.status,"error");}catch(e){toast("Erro: "+e.message,"error");}}
 
-async function manualStart(name,sec){const z=ZONES.find(x=>x.name===name);if(!z)return;try{if(z.useTimer)await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on",timer:sec});else await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on"});toast(`${z.label} ligada`,"success");await new Promise(r=>setTimeout(r,1500));await refreshRelays();renderManual();renderBanners();}catch(e){toast("Erro: "+e.message,"error");}}
-async function manualStop(name){const z=ZONES.find(x=>x.name===name);if(!z)return;try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});toast(`${z.label} parada`,"success");await new Promise(r=>setTimeout(r,1500));await refreshRelays();renderManual();renderBanners();}catch(e){toast("Erro: "+e.message,"error");}}
+let manualStopTimers={};
+async function manualStart(name,sec){const z=ZONES.find(x=>x.name===name);if(!z)return;try{if(z.useTimer)await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on",timer:sec});else await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on"});if(manualStopTimers[name])clearTimeout(manualStopTimers[name]);manualStopTimers[name]=setTimeout(()=>{shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"}).then(()=>{refreshRelays().then(()=>{renderManual();renderBanners();});});delete manualStopTimers[name];},sec*1000);toast(`${z.label} ligada — ${Math.round(sec/60)}min`,"success");await new Promise(r=>setTimeout(r,1500));await refreshRelays();renderManual();renderBanners();}catch(e){toast("Erro: "+e.message,"error");}}
+async function manualStop(name){const z=ZONES.find(x=>x.name===name);if(!z)return;if(manualStopTimers[name]){clearTimeout(manualStopTimers[name]);delete manualStopTimers[name];}try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});toast(`${z.label} parada`,"success");await new Promise(r=>setTimeout(r,1500));await refreshRelays();renderManual();renderBanners();}catch(e){toast("Erro: "+e.message,"error");}}
 async function emergencyStopAll(){if(!confirm("Parar TODAS as zonas agora?"))return;for(const z of ZONES){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});}catch{}}await new Promise(r=>setTimeout(r,1500));await refreshRelays();renderManual();renderBanners();toast("Tudo parado","success");}
 function confirmRunAll(){if(!confirm("Regar todas as zonas em sequência? Vai correr o workflow no GitHub."))return;dispatchNow();}
 
@@ -367,7 +372,7 @@ function stepZone(name,delta){const nv=Math.max(1,Math.min(25,editState.zones[na
 function toggleApplyAll(){editState.applyAll=!editState.applyAll;refreshEditUI();}
 async function saveEdit(){const btn=document.getElementById("edit-save-btn");btn.disabled=true;btn.textContent="A guardar…";try{config={...config,start_time:editState.start_time,zones:editState.zones};await saveConfig();const[h,m]=editState.start_time.split(":").map(Number);const u=lisbonToUtc(h,m);const nc=`${u.m} ${u.h} * * *`;if(workflowCrons.length===1&&workflowCrons[0]!==nc){workflowCrons[0]=nc;await saveSchedule();}toast("Guardado","success");closeDay();switchView("home");}catch(e){toast("Erro: "+e.message,"error");btn.disabled=false;btn.textContent="Guardar";}}
 
-function renderManual(){const root=document.getElementById("manual-zones");const active=activeZone();root.innerHTML=ZONES.map(z=>{const isRunning=active&&active.name===z.name;const dur=config.zones[z.name];const sec=dur*60;if(isRunning){return `<div class="play-zone running"><button class="play-btn stop" onclick="manualStop('${z.name}')">■</button><div class="play-info"><div class="n">${z.label} · a regar</div><div class="s running">limite ${dur}min</div></div></div>`;}return `<div class="play-zone"><button class="play-btn" onclick="manualStart('${z.name}', ${sec})" ${active?'disabled':''}>▶</button><div class="play-info"><div class="n">${z.label}</div><div class="s">${dur} min${z.fixed?' · fixo':''}</div></div></div>`;}).join("");}
+function renderManual(){const root=document.getElementById("manual-zones");const active=activeZone();root.innerHTML=ZONES.map(z=>{const isRunning=active&&active.name===z.name;const dur=config.zones[z.name];const sec=dur*60;if(isRunning){return `<div class="play-zone running"><button class="play-btn stop" onclick="manualStop('${z.name}')">■</button><div class="play-info"><div class="n">${z.label} · a regar</div><div class="s running">limite ${dur}min</div></div></div>`;}return `<div class="play-zone"><button class="play-btn" onclick="manualStart('${z.name}', ${sec})" ${active?'disabled':''}>▶</button><div class="play-info"><div class="n">${z.label}</div><div class="s">${dur} min</div></div></div>`;}).join("");}
 
 function renderSettings(){const slotsRoot=document.getElementById("slots-container");slotsRoot.innerHTML=workflowCrons.length===0?'<div class="muted">Sem horários</div>':workflowCrons.map((c,i)=>{const p=parseCron(c);const l=utcToLisbon(p.h,p.m);return `<div class="slot-item"><span class="t">${fmtHM(l.h,l.m)}</span><button class="x" onclick="removeSlot(${i})">×</button></div>`;}).join("");const zonesRoot=document.getElementById("settings-zones");zonesRoot.innerHTML=ZONES.map(z=>z.fixed?`<div class="set-row"><div class="lbl">${z.label}<span class="zone-badge">fixo</span></div><div class="val">15 min</div></div>`:`<div class="set-row"><div class="lbl">${z.label}</div><div class="val">${config.zones[z.name]} min</div></div>`).join("");const pl=document.getElementById("pause-state-lbl");const ps=document.getElementById("pause-state-sub");const pb=document.getElementById("pause-btn");if(pausedState===null){pl.textContent="A carregar…";ps.textContent="";pb.textContent="—";}else if(pausedState){pl.textContent="Cron pausado";ps.textContent="rega automática desactivada";pb.textContent="retomar";pb.style.color="var(--g)";}else{pl.textContent="Cron ativo";ps.textContent="rega automática a correr";pb.textContent="pausar";pb.style.color="var(--ylw)";}}
 
@@ -375,11 +380,4 @@ function renderBanners(){const root=document.getElementById("banners");let html=
 
 async function refreshAll(){const btn=document.getElementById("refresh-btn");btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;try{await Promise.all([loadConfig(),fetchWeather(),loadLog(),loadSchedule(),loadPause(),refreshRelays()]);renderBanners();if(currentView==="home")renderHome();else if(currentView==="manual")renderManual();else if(currentView==="settings")renderSettings();}catch(e){toast("Erro: "+e.message,"error");}finally{btn.innerHTML="↻";btn.disabled=false;}}
 
-function toast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast show "+type;clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),3000);}
-
-function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.getElementById("gate-setup").classList.remove("hidden");return;}document.getElementById("app").classList.remove("hidden");refreshAll();setInterval(async()=>{if(currentView==="manual"||activeZone()){await refreshRelays();renderBanners();if(currentView==="manual")renderManual();}},8000);}
-
-window.addEventListener("DOMContentLoaded",()=>{if(sessionStorage.getItem("auth_ok")==="1")enterApp();else document.getElementById("gate-login").classList.remove("hidden");});
-</script>
-</body>
-</html>
+function toast(msg,type=""){const t=document.getElementById("toast"
