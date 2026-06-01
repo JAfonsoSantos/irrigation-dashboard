@@ -406,8 +406,13 @@ const LIGHT_ZONES = [
   { name: "fachada_frente",   label: "Fachada Frente",     device: "34945471e686", channel: 0 },
 ];
 const BRISA_ZONES = [
-  { name: "oliveira", label: "Oliveira", device: "4c7525341b1f", channel: 0 },
-  { name: "cozinha",  label: "Cozinha",  device: "3494546bc56d", channel: 0 },
+  { name: "corredor",      label: "Corredor",      device: "c8c9a367df5d", channel: 0 },
+  { name: "oliveira",      label: "Oliveira",      device: "4c7525341b1f", channel: 0 },
+  { name: "lavandaria",    label: "Lavandaria",    device: "3494546b963c", channel: 0 },
+  { name: "salamandra",    label: "Salamandra",    device: "c8c9a367e0f9", channel: 0 },
+  { name: "sala_estar",    label: "Sala de estar", device: "c8c9a367de4d", channel: 0 },
+  { name: "sala_jantar",   label: "Sala de jantar",device: "c8c9a379faf8", channel: 0 },
+  { name: "cozinha",       label: "Cozinha",       device: "3494546bc56d", channel: 0 },
 ];
 const AUTH_HASH = "846d762664daa0049c8c8648afb26420383e1d5525d8d10b9c45db86051649d8";
 
@@ -434,8 +439,13 @@ let config = {
   },
   brisas: {
     zones: {
-      oliveira: { open: { mode: "sunrise", time: "08:00", offset: 15 },  close: { mode: "sunset", time: "21:00", offset: -15 }, enabled: true },
-      cozinha:  { open: { mode: "fixed",   time: "08:00", offset: 0 },   close: { mode: "fixed",  time: "21:00", offset: 0 },   enabled: true }
+      corredor:    { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } },
+      oliveira:    { enabled: true, open: { mode: "sunrise", time: "08:00", offset: 15 }, close: { mode: "sunset", time: "21:00", offset: -15 } },
+      lavandaria:  { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } },
+      salamandra:  { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } },
+      sala_estar:  { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } },
+      sala_jantar: { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } },
+      cozinha:     { enabled: true, open: { mode: "fixed",   time: "08:00", offset: 0 },  close: { mode: "fixed",  time: "21:00", offset: 0 } }
     }
   }
 };
