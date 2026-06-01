@@ -1,0 +1,9 @@
+{
+  "start_time": "06:00",
+  "zones": {
+    "norte": 15,
+    "oliveira": 15,
+    "cozinha": 15,
+    "entrada": 15
+  }
+}

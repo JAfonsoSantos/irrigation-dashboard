@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#16a34a">
+<title>Smart Irrigation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; padding: 16px; background: #f6f7f8; color: #1a1a1a; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    max-width: 980px; margin: 0 auto;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px 0; }
+  h2 { font-size: 14px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; font-weight: 600; }
+  .subtitle { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05); margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+  .relay { background: #fff; border-radius: 10px; padding: 12px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05); transition: all 0.2s; }
+  .relay.on { background: #dcfce7; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 2px #16a34a; }
+  .relay.off { background: #fff; }
+  .relay.unknown { background: #fef3c7; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px #f59e0b; }
+  .relay .name { font-weight: 600; font-size: 13px; }
+  .relay .state { font-size: 11px; color: #6b7280; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .relay.on .state { color: #16a34a; }
+  button { background: #1a1a1a; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 500; transition: opacity 0.15s; -webkit-tap-highlight-color: transparent; }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.danger { background: #dc2626; }
+  button.warn { background: #f59e0b; }
+  button.success { background: #16a34a; }
+  button.ghost { background: #fff; color: #1a1a1a; box-shadow: 0 0 0 1px #d1d5db; }
+  button.small { padding: 6px 10px; font-size: 12px; }
+  button.wide { width: 100%; }
+  select, input { padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: #fff; width: 100%; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  .pill.skip, .pill.paused { background: #dbeafe; color: #1e40af; }
+  .pill.normal { background: #e0e7ff; color: #4338ca; }
+  .pill.reduced { background: #fef3c7; color: #92400e; }
+  .pill.extended { background: #fee2e2; color: #991b1b; }
+  .pill.success { background: #dcfce7; color: #166534; }
+  .pill.failure, .pill.error { background: #fee2e2; color: #991b1b; }
+  .pill.in_progress, .pill.queued { background: #fef3c7; color: #92400e; }
+  .pill.predicted { background: #f3f4f6; color: #4b5563; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #f3f4f6; }
+  th { font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  td a { color: #2563eb; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .muted { color: #6b7280; font-size: 12px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.2s; max-width: 90%; }
+  .toast.show { opacity: 1; }
+  .toast.error { background: #dc2626; }
+  .toast.success { background: #16a34a; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #d1d5db; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .needs-setup { padding: 16px; background: #fef3c7; border-radius: 10px; }
+
+  /* Live banner */
+  .live-banner { padding: 12px 16px; border-radius: 10px; margin: 8px 0 12px 0; display: flex; align-items: center; gap: 12px; }
+  .live-banner.watering { background: #dcfce7; box-shadow: 0 0 0 2px #16a34a inset; }
+  .live-banner.running { background: #dbeafe; box-shadow: 0 0 0 2px #2563eb inset; }
+  .live-banner .pulse { width: 10px; height: 10px; border-radius: 50%; background: #16a34a; animation: pulse 1.2s ease-in-out infinite; }
+  .live-banner.running .pulse { background: #2563eb; }
+  .live-banner .text { font-weight: 600; }
+  .live-banner .sub { font-size: 12px; color: #4b5563; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+
+  /* Matrix */
+  .matrix { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .matrix .day {
+    background: #fff; border-radius: 8px; padding: 10px 6px; text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05);
+    min-height: 96px;
+    cursor: pointer;
+  }
+  .matrix .day:hover { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px #9ca3af; }
+  .matrix .day.today { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 2px #1a1a1a; }
+  .matrix .day.future { opacity: 0.92; }
+  .matrix .day.has-data { background: #fafafa; }
+  .matrix .day-name { font-size: 10px; color: #6b7280; text-transform: uppercase; font-weight: 600; }
+  .matrix .day-num { font-size: 18px; font-weight: 600; line-height: 1; margin: 2px 0 6px 0; }
+  .matrix .day .pill { font-size: 9px; padding: 1px 5px; }
+  .matrix .day .dur { font-size: 10px; color: #6b7280; margin-top: 4px; }
+  .matrix .day .slot-count { font-size: 9px; color: #6b7280; margin-top: 2px; }
+  .day-detail { margin-top: 8px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 3px solid #1a1a1a; display: none; }
+  .day-detail.show { display: block; }
+  .day-detail h3 { font-size: 14px; margin: 0 0 8px 0; }
+  .day-detail .slot-block { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+  .day-detail .slot-block:last-child { border-bottom: none; }
+  .day-detail .zone-line { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
+  .day-detail .zone-line .ok { color: #16a34a; }
+  .day-detail .zone-line .ko { color: #dc2626; }
+
+  /* Schedule slots */
+  .slot-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+  .slot-row:last-child { border-bottom: none; }
+  .slot-time { font-weight: 600; font-size: 14px; min-width: 70px; }
+  .slot-meta { color: #6b7280; font-size: 12px; flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ============== Login gate ============== -->
+<div id="login" style="display:none">
+  <div class="card needs-setup">
+    <h1>🔐 Login</h1>
+    <p class="muted">Smart Irrigation Dashboard</p>
+    <div style="margin: 12px 0">
+      <label class="muted">Username</label>
+      <input type="text" id="login-user" autocomplete="username">
+    </div>
+    <div style="margin: 12px 0">
+      <label class="muted">Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="wide" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ============== Setup (Shelly + GH credentials) ============== -->
+<div id="setup" style="display:none">
+  <div class="card needs-setup">
+    <h1>⚙️ Setup</h1>
+    <p class="muted">Cola as credenciais (ficam só no localStorage do browser).</p>
+    <div style="margin: 12px 0">
+      <label class="muted">Shelly auth_key</label>
+      <input type="password" id="setup-shelly" placeholder="MTI5...">
+    </div>
+    <div style="margin: 12px 0">
+      <label class="muted">GitHub PAT (scopes: repo, workflow)</label>
+      <input type="password" id="setup-github" placeholder="ghp_...">
+    </div>
+    <button class="wide" onclick="saveSetup()">Guardar e entrar</button>
+  </div>
+</div>
+
+<!-- ============== Main app ============== -->
+<div id="app" style="display:none">
+  <a href="index.html" style="display:inline-block;margin-bottom:8px;color:#16a34a;text-decoration:none;font-size:13px;">‹ voltar à vista simples</a>
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 4px">
+    <div>
+      <h1>🌱 Smart Irrigation</h1>
+      <p class="subtitle">Esposende · <span id="paused-indicator"><span class="spinner"></span></span></p>
+    </div>
+    <div style="display:flex; gap:6px">
+      <button class="ghost small" onclick="refreshAll()" id="refresh-btn">↻</button>
+      <button class="ghost small" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div id="live-banner" style="display:none"></div>
+
+  <h2>Estado dos relés <span id="last-fetch" class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal"></span></h2>
+  <div class="grid-4" id="relays"></div>
+
+  <h2>Ações rápidas</h2>
+  <div class="card">
+    <div class="row" style="margin-bottom: 8px">
+      <button class="danger" onclick="stopAll()" style="flex:1">⏹ STOP ALL</button>
+      <button class="warn" onclick="togglePause()" id="pause-btn" style="flex:1">⏸ ...</button>
+    </div>
+    <button class="success wide" onclick="runNow()">▶️ Disparar run agora (workflow)</button>
+  </div>
+
+  <h2>7 dias <span class="muted" style="text-transform:none; letter-spacing:0; font-weight:normal">· clica num dia para detalhes</span></h2>
+  <div class="card" style="padding: 12px">
+    <div class="matrix" id="matrix"><div class="muted">A carregar…</div></div>
+    <div class="day-detail" id="day-detail"></div>
+  </div>
+
+  <h2>Horários de rega</h2>
+  <div class="card">
+    <div id="slots-list"><div class="muted">A carregar…</div></div>
+    <div class="row" style="margin-top: 12px; align-items:center">
+      <input type="time" id="new-slot-time" value="07:00" style="max-width:130px">
+      <button class="success" onclick="addSlot()">+ Adicionar slot</button>
+    </div>
+    <p class="muted" style="margin-top:8px">Hora local Lisboa. Cada slot dispara uma nova run do workflow.</p>
+  </div>
+
+  <h2>Forçar regar uma zona</h2>
+  <div class="card">
+    <div class="grid-2" style="margin-bottom: 8px">
+      <select id="zone-pick">
+        <option value="oliveira">Oliveira (ch0)</option>
+        <option value="norte">Norte (ch1)</option>
+        <option value="entrada">Entrada (ch0)</option>
+        <option value="cozinha">Cozinha (ch1)</option>
+      </select>
+      <select id="dur-pick">
+        <option value="300">5 min</option>
+        <option value="600">10 min</option>
+        <option value="900" selected>15 min</option>
+        <option value="1200">20 min</option>
+        <option value="1350">22.5 min</option>
+        <option value="1500">25 min (max)</option>
+      </select>
+    </div>
+    <button class="wide success" onclick="forceWater()">💧 Ligar zona</button>
+    <p class="muted" style="margin: 8px 0 0 0">Channel 1 (norte/cozinha) usa sempre auto-off de 15 min.</p>
+  </div>
+
+  <h2>Últimos runs do GitHub Actions</h2>
+  <div class="card" style="padding: 4px 14px">
+    <table>
+      <thead><tr><th>Quando</th><th>Status</th><th>Duração</th><th>Trigger</th></tr></thead>
+      <tbody id="runs-tbody"><tr><td colspan="4" class="muted">A carregar…</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Log de decisões (últimas 30)</h2>
+  <div class="card" style="padding: 4px 14px">
+    <table>
+      <thead><tr><th>Data</th><th>Decisão</th><th>Chuva 48h</th><th>et0</th><th>Dias secos</th><th>Total</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="6" class="muted">A carregar…</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Settings</h2>
+  <div class="card">
+    <button class="ghost small" onclick="resetSecrets()">🔑 Limpar credenciais</button>
+    <p class="muted" style="margin-top: 10px">Repo: <a href="https://github.com/JAfonsoSantos/smart-irrigation" target="_blank">JAfonsoSantos/smart-irrigation</a></p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================================
+// Config
+// ============================================================================
+const REPO = "JAfonsoSantos/smart-irrigation";
+const SHELLY_BASE = "https://shelly-46-eu.shelly.cloud";
+const ZONES = [
+  { name: "oliveira", device: "c8c9a379ff9d", channel: 0, useTimer: true },
+  { name: "norte",    device: "c8c9a379ff9d", channel: 1, useTimer: false },
+  { name: "entrada",  device: "c8c9a37a09c4", channel: 0, useTimer: true },
+  { name: "cozinha",  device: "c8c9a37a09c4", channel: 1, useTimer: false }
+];
+const AUTH_HASH = "846d762664daa0049c8c8648afb26420383e1d5525d8d10b9c45db86051649d8";  // sha256("CatAfo:MerMadTer")
+const LAT = 41.5463, LON = -8.7882;
+
+let SHELLY_KEY = localStorage.getItem("irrig_shelly") || "";
+let GH_TOKEN = localStorage.getItem("irrig_github") || "";
+let pausedState = null;
+let pauseFlagSha = null;
+let workflowSha = null;
+let workflowCrons = [];
+let currentRelayStates = {};   // device → [ison, ison]
+let activeRun = null;          // {id, started_at, ...} when in_progress
+let pollHandle = null;
+let pollIntervalMs = 30000;    // current poll rate
+
+// ============================================================================
+// Login gate
+// ============================================================================
+async function sha256(text) {
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function doLogin() {
+  const u = document.getElementById("login-user").value;
+  const p = document.getElementById("login-pass").value;
+  const h = await sha256(u + ":" + p);
+  if (h === AUTH_HASH) {
+    sessionStorage.setItem("auth_ok", "1");
+    document.getElementById("login").style.display = "none";
+    enterApp();
+  } else {
+    toast("Credenciais erradas", "error");
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem("auth_ok");
+  location.reload();
+}
+
+// ============================================================================
+// Shelly
+// ============================================================================
+async function shellyCall(path, params) {
+  const body = new URLSearchParams({ auth_key: SHELLY_KEY, ...params });
+  const r = await fetch(SHELLY_BASE + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString()
+  });
+  return r.json();
+}
+
+async function refreshRelays() {
+  const devices = [...new Set(ZONES.map(z => z.device))];
+  const states = {};
+  for (let i = 0; i < devices.length; i++) {
+    const id = devices[i];
+    if (i > 0) await new Promise(r => setTimeout(r, 600));
+    let relays = [];
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const r = await shellyCall("/device/status", { id });
+        relays = r?.data?.device_status?.relays || [];
+        if (relays.length > 0) break;
+      } catch (e) {}
+      if (attempt < 2) await new Promise(r => setTimeout(r, 800));
+    }
+    states[id] = relays.length > 0 ? relays.map(x => x?.ison) : [null, null];
+  }
+  currentRelayStates = states;
+  const html = ZONES.map(z => {
+    const state = states[z.device]?.[z.channel];
+    const cls = state === true ? "on" : state === false ? "off" : "unknown";
+    const txt = state === true ? "ON" : state === false ? "OFF" : "?";
+    return `<div class="relay ${cls}"><div class="name">${z.name}</div><div class="state">${txt}</div></div>`;
+  }).join("");
+  document.getElementById("relays").innerHTML = html;
+  document.getElementById("last-fetch").textContent = "· " + new Date().toLocaleTimeString("pt-PT", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+  updateLiveBanner();
+  adjustPollRate();
+}
+
+function activeZoneName() {
+  for (const z of ZONES) {
+    if (currentRelayStates[z.device]?.[z.channel] === true) return z.name;
+  }
+  return null;
+}
+
+function fmtElapsed(startIso) {
+  const sec = Math.max(0, Math.round((Date.now() - new Date(startIso).getTime()) / 1000));
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m}m ${String(s).padStart(2,"0")}s`;
+}
+
+function updateLiveBanner() {
+  const el = document.getElementById("live-banner");
+  const activeZone = activeZoneName();
+  if (activeZone) {
+    el.className = "live-banner watering";
+    el.style.display = "flex";
+    el.innerHTML = `
+      <span class="pulse"></span>
+      <div>
+        <div class="text">A regar: ${activeZone}</div>
+        <div class="sub">refresh a cada 5s</div>
+      </div>`;
+  } else if (activeRun) {
+    el.className = "live-banner running";
+    el.style.display = "flex";
+    el.innerHTML = `
+      <span class="pulse"></span>
+      <div>
+        <div class="text">Workflow em execução · ${fmtElapsed(activeRun.run_started_at || activeRun.created_at)}</div>
+        <div class="sub">refresh a cada 5s · <a href="${activeRun.html_url}" target="_blank">ver logs</a></div>
+      </div>`;
+  } else {
+    el.style.display = "none";
+    el.innerHTML = "";
+  }
+}
+
+function adjustPollRate() {
+  // Faster polling if any relay is ON OR a workflow is in progress
+  const fast = activeZoneName() || activeRun;
+  const target = fast ? 5000 : 30000;
+  if (target !== pollIntervalMs) {
+    pollIntervalMs = target;
+    if (pollHandle) clearInterval(pollHandle);
+    pollHandle = setInterval(pollTick, pollIntervalMs);
+  }
+}
+
+async function pollTick() {
+  await refreshRelays();
+  await checkActiveRun();
+  updateLiveBanner();
+  // Refresh logs/runs occasionally when in fast mode (every ~6 ticks = 30s)
+  if (pollIntervalMs < 30000) {
+    pollTick.counter = (pollTick.counter || 0) + 1;
+    if (pollTick.counter % 6 === 0) {
+      loadRuns();
+      loadLog();
+    }
+  }
+}
+
+async function checkActiveRun() {
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/runs?per_page=5&status=in_progress`);
+    if (!r.ok) return;
+    const data = await r.json();
+    const inProg = (data.workflow_runs || []).find(x => x.status === "in_progress" || x.status === "queued");
+    activeRun = inProg || null;
+  } catch (e) {}
+}
+
+async function stopAll() {
+  if (!confirm("STOP — desligar todos os 4 relés?")) return;
+  toast("A desligar...");
+  for (const z of ZONES) {
+    try { await shellyCall("/device/relay/control", { id: z.device, channel: z.channel, turn: "off" }); }
+    catch (e) {}
+  }
+  await new Promise(r => setTimeout(r, 1500));
+  await refreshRelays();
+  toast("Stop enviado ✓", "success");
+}
+
+async function forceWater() {
+  const name = document.getElementById("zone-pick").value;
+  const duration = parseInt(document.getElementById("dur-pick").value);
+  const z = ZONES.find(x => x.name === name);
+  if (!confirm(`Ligar ${name} por ${Math.round(duration/60)} min?`)) return;
+  const params = { id: z.device, channel: z.channel, turn: "on" };
+  if (z.useTimer) params.timer = duration;
+  try {
+    const r = await shellyCall("/device/relay/control", params);
+    if (r.isok) { toast(`${name} ligado ✓`, "success"); setTimeout(refreshRelays, 1500); }
+    else { toast("Erro: " + JSON.stringify(r.errors || r), "error"); }
+  } catch (e) { toast("Falha: " + e.message, "error"); }
+}
+
+// ============================================================================
+// GitHub
+// ============================================================================
+async function ghFetch(path, opts = {}) {
+  return fetch("https://api.github.com" + path, {
+    ...opts,
+    headers: {
+      "Authorization": "Bearer " + GH_TOKEN,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(opts.headers || {})
+    }
+  });
+}
+
+async function getFile(filepath) {
+  const r = await ghFetch(`/repos/${REPO}/contents/${filepath}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error("GH " + r.status);
+  return r.json();
+}
+
+async function getPauseState() {
+  try {
+    const f = await getFile("paused.flag");
+    if (f) { pauseFlagSha = f.sha; pausedState = true; }
+    else { pauseFlagSha = null; pausedState = false; }
+  } catch (e) { pausedState = false; }
+  updatePauseUI();
+}
+
+function updatePauseUI() {
+  const btn = document.getElementById("pause-btn");
+  const ind = document.getElementById("paused-indicator");
+  if (pausedState === null) { btn.textContent = "⏸ ..."; ind.innerHTML = '<span class="spinner"></span>'; }
+  else if (pausedState) {
+    btn.textContent = "▶️ Retomar cron";
+    btn.classList.remove("warn"); btn.classList.add("success");
+    ind.innerHTML = '<span class="pill paused">Cron pausado</span>';
+  } else {
+    btn.textContent = "⏸ Pausar cron";
+    btn.classList.remove("success"); btn.classList.add("warn");
+    ind.innerHTML = '<span class="pill success">Cron ativo</span>';
+  }
+}
+
+async function togglePause() {
+  const btn = document.getElementById("pause-btn");
+  btn.disabled = true;
+  try {
+    if (pausedState) {
+      const r = await ghFetch(`/repos/${REPO}/contents/paused.flag`, {
+        method: "DELETE", body: JSON.stringify({ message: "dashboard: resume cron", sha: pauseFlagSha })
+      });
+      if (!r.ok) throw new Error("delete " + r.status);
+      toast("Cron retomado ✓", "success");
+    } else {
+      const content = btoa(`Paused via dashboard at ${new Date().toISOString()}\n`);
+      const r = await ghFetch(`/repos/${REPO}/contents/paused.flag`, {
+        method: "PUT", body: JSON.stringify({ message: "dashboard: pause cron", content })
+      });
+      if (!r.ok) throw new Error("create " + r.status);
+      toast("Cron pausado ⏸", "success");
+    }
+    await getPauseState();
+  } catch (e) { toast("Erro: " + e.message, "error"); }
+  finally { btn.disabled = false; }
+}
+
+async function runNow() {
+  if (!confirm("Disparar uma run agora?")) return;
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/workflows/irrigation.yml/dispatches`, {
+      method: "POST", body: JSON.stringify({ ref: "main" })
+    });
+    if (r.status === 204) {
+      toast("Run disparada ✓", "success");
+      // Force fast polling immediately
+      activeRun = { run_started_at: new Date().toISOString(), html_url: `https://github.com/${REPO}/actions`, status: "queued" };
+      updateLiveBanner();
+      adjustPollRate();
+      setTimeout(() => { loadRuns(); checkActiveRun(); }, 4000);
+      setTimeout(() => { loadRuns(); checkActiveRun(); refreshRelays(); }, 10000);
+    }
+    else { toast("Erro: " + r.status, "error"); }
+  } catch (e) { toast("Falha: " + e.message, "error"); }
+}
+
+async function loadRuns() {
+  try {
+    const r = await ghFetch(`/repos/${REPO}/actions/runs?per_page=10`);
+    if (!r.ok) throw new Error("status " + r.status);
+    const data = await r.json();
+    const rows = (data.workflow_runs || []).map(run => {
+      const start = new Date(run.run_started_at || run.created_at);
+      const dur = run.updated_at ? Math.round((new Date(run.updated_at) - start) / 60000) : "—";
+      const statusCls = run.conclusion || run.status || "queued";
+      return `<tr>
+        <td>${start.toLocaleString("pt-PT", {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"})}</td>
+        <td><span class="pill ${statusCls}">${run.conclusion || run.status}</span></td>
+        <td>${dur} min</td>
+        <td><a href="${run.html_url}" target="_blank">${run.event}</a></td>
+      </tr>`;
+    });
+    document.getElementById("runs-tbody").innerHTML = rows.join("") || '<tr><td colspan="4" class="muted">Sem runs ainda</td></tr>';
+  } catch (e) {
+    document.getElementById("runs-tbody").innerHTML = `<tr><td colspan="4" class="muted">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+let logEntries = [];
+async function loadLog() {
+  try {
+    const f = await getFile("irrigation-log.json");
+    if (!f || !f.content) {
+      document.getElementById("log-tbody").innerHTML = '<tr><td colspan="6" class="muted">Sem log ainda</td></tr>';
+      logEntries = [];
+      return;
+    }
+    const content = atob(f.content.replace(/\n/g, ""));
+    logEntries = JSON.parse(content);
+    const latest = logEntries.slice(-30).reverse();
+    const rows = latest.map(e => {
+      const dec = (e.decision || "").toLowerCase();
+      return `<tr>
+        <td>${e.date} ${e.time || ""}</td>
+        <td><span class="pill ${dec}">${e.decision}</span></td>
+        <td>${e.rain_48h_mm ?? "—"}mm</td>
+        <td>${e.et0_mm ?? "—"}mm</td>
+        <td>${e.dry_days ?? "—"}</td>
+        <td>${e.total_duration_min ?? 0} min</td>
+      </tr>`;
+    });
+    document.getElementById("log-tbody").innerHTML = rows.join("");
+  } catch (e) {
+    document.getElementById("log-tbody").innerHTML = `<tr><td colspan="6" class="muted">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+// ============================================================================
+// Schedule editor — edits the workflow YAML via Contents API
+// ============================================================================
+function buildWorkflowYaml(crons) {
+  const lines = crons.map(c => `    - cron: "${c}"`).join("\n") || `    - cron: "0 6 * * *"`;
+  return `name: Smart Irrigation
+
+on:
+  schedule:
+${lines}
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  irrigate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    concurrency:
+      group: irrigation
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repo (for log persistence)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run irrigation
+        env:
+          SHELLY_AUTH_KEY: \${{ secrets.SHELLY_AUTH_KEY }}
+          SLACK_WEBHOOK_URL: \${{ secrets.SLACK_WEBHOOK_URL }}
+          IRRIGATION_LOG: irrigation-log.json
+        run: python irrigation.py
+
+      - name: Commit updated log
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add irrigation-log.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "log: $(date -u +%F)"
+          git push || true
+`;
+}
+
+function parseCronToHM(cron) {
+  // "M H * * *" → {hour: H, min: M} (UTC)
+  const parts = cron.trim().split(/\s+/);
+  return { min: parseInt(parts[0]) || 0, hour: parseInt(parts[1]) || 0 };
+}
+
+function isLisbonDST(date) {
+  // Portugal DST: last Sun Mar 01:00 UTC → last Sun Oct 02:00 UTC
+  const y = date.getUTCFullYear();
+  const lastSunMarch = new Date(Date.UTC(y, 2, 31));
+  lastSunMarch.setUTCDate(31 - lastSunMarch.getUTCDay());
+  lastSunMarch.setUTCHours(1, 0, 0, 0);
+  const lastSunOct = new Date(Date.UTC(y, 9, 31));
+  lastSunOct.setUTCDate(31 - lastSunOct.getUTCDay());
+  lastSunOct.setUTCHours(1, 0, 0, 0);  // 02:00 local = 01:00 UTC
+  return date >= lastSunMarch && date < lastSunOct;
+}
+
+function utcToLisbon(hh, mm) {
+  const offset = isLisbonDST(new Date()) ? 1 : 0;
+  let h = (hh + offset) % 24;
+  return { hour: h, min: mm };
+}
+
+function lisbonToUtc(hh, mm) {
+  const offset = isLisbonDST(new Date()) ? 1 : 0;
+  let h = (hh - offset + 24) % 24;
+  return { hour: h, min: mm };
+}
+
+function formatHM(h, m) {
+  return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+}
+
+async function loadSchedule() {
+  try {
+    const f = await getFile(".github/workflows/irrigation.yml");
+    if (!f) throw new Error("workflow not found");
+    workflowSha = f.sha;
+    const yaml = atob(f.content.replace(/\n/g, ""));
+    const regex = /-\s*cron:\s*["']([^"']+)["']/g;
+    workflowCrons = [...yaml.matchAll(regex)].map(m => m[1]);
+    renderSlots();
+  } catch (e) {
+    document.getElementById("slots-list").innerHTML = `<div class="muted">Erro: ${e.message}</div>`;
+  }
+}
+
+function renderSlots() {
+  if (workflowCrons.length === 0) {
+    document.getElementById("slots-list").innerHTML = '<div class="muted">Sem slots configurados</div>';
+    return;
+  }
+  const html = workflowCrons.map((cron, idx) => {
+    const { min: m, hour: hUtc } = parseCronToHM(cron);
+    const { hour: hLisbon, min: mLisbon } = utcToLisbon(hUtc, m);
+    return `<div class="slot-row">
+      <div class="slot-time">${formatHM(hLisbon, mLisbon)}</div>
+      <div class="slot-meta">UTC ${formatHM(hUtc, m)} · cron: <code>${cron}</code></div>
+      <button class="ghost small" onclick="removeSlot(${idx})">🗑 Remover</button>
+    </div>`;
+  }).join("");
+  document.getElementById("slots-list").innerHTML = html;
+}
+
+async function saveSchedule() {
+  // Sort by UTC time for tidiness
+  workflowCrons.sort((a, b) => {
+    const A = parseCronToHM(a), B = parseCronToHM(b);
+    return (A.hour * 60 + A.min) - (B.hour * 60 + B.min);
+  });
+  const yaml = buildWorkflowYaml(workflowCrons);
+  const r = await ghFetch(`/repos/${REPO}/contents/.github/workflows/irrigation.yml`, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: "dashboard: update schedule",
+      content: btoa(unescape(encodeURIComponent(yaml))),
+      sha: workflowSha
+    })
+  });
+  if (!r.ok) throw new Error("save " + r.status);
+  const data = await r.json();
+  workflowSha = data.content.sha;
+}
+
+async function addSlot() {
+  const time = document.getElementById("new-slot-time").value;  // "HH:MM" local
+  if (!time) return;
+  const [h, m] = time.split(":").map(Number);
+  const { hour: utcH, min: utcM } = lisbonToUtc(h, m);
+  const newCron = `${utcM} ${utcH} * * *`;
+  if (workflowCrons.includes(newCron)) { toast("Esse slot já existe", "error"); return; }
+  workflowCrons.push(newCron);
+  try {
+    await saveSchedule();
+    renderSlots();
+    toast("Slot adicionado ✓", "success");
+    loadMatrix();
+  } catch (e) {
+    workflowCrons = workflowCrons.filter(c => c !== newCron);
+    toast("Erro: " + e.message, "error");
+  }
+}
+
+async function removeSlot(idx) {
+  if (workflowCrons.length === 1) {
+    if (!confirm("Este é o último slot — sem slots, a rega automática para. Continuar?")) return;
+  }
+  const removed = workflowCrons.splice(idx, 1)[0];
+  try {
+    await saveSchedule();
+    renderSlots();
+    toast("Slot removido ✓", "success");
+    loadMatrix();
+  } catch (e) {
+    workflowCrons.splice(idx, 0, removed);
+    toast("Erro: " + e.message, "error");
+  }
+}
+
+// ============================================================================
+// 7-day matrix
+// ============================================================================
+function dateKey(d) { return d.toISOString().slice(0,10); }
+function dayName(d) {
+  return ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][d.getDay()];
+}
+
+function decideForDay(rain_48h, rain_today, prob_today, et0, dry_days, month) {
+  let decision, ch0;
+  if (rain_48h > 5 || (prob_today > 70 && rain_today > 3)) { decision = "SKIP"; ch0 = 0; }
+  else if (rain_48h >= 2 && rain_48h <= 5) { decision = "REDUCED"; ch0 = 450; }
+  else if (dry_days >= 5 && et0 > 4) { decision = "EXTENDED"; ch0 = 1350; }
+  else { decision = "NORMAL"; ch0 = 900; }
+  if (decision !== "SKIP") {
+    if (month >= 6 && month <= 9) ch0 = Math.round(ch0 * 1.3);
+    else if (month === 12 || month <= 2) ch0 = Math.round(ch0 * 0.7);
+  }
+  ch0 = Math.min(ch0, 1500);
+  return { decision, ch0_sec: ch0 };
+}
+
+let matrixDays = [];  // populated by loadMatrix, used by openDay
+
+async function loadMatrix() {
+  const root = document.getElementById("matrix");
+  document.getElementById("day-detail").classList.remove("show");
+  root.innerHTML = '<div class="muted" style="grid-column:1/-1">A calcular previsão…</div>';
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&past_days=7&forecast_days=4&timezone=Europe%2FLisbon`;
+    const wRes = await fetch(url);
+    const w = await wRes.json();
+    const daily = w.daily;
+    const dates = daily.time;
+
+    // Group log entries by date
+    const logByDate = {};
+    for (const e of logEntries) {
+      if (!e.date) continue;
+      (logByDate[e.date] = logByDate[e.date] || []).push(e);
+    }
+
+    const numSlotsPerDay = workflowCrons.length || 1;
+    matrixDays = [];
+    const cells = [];
+
+    for (let offset = -3; offset <= 3; offset++) {
+      const day = new Date();
+      day.setDate(day.getDate() + offset);
+      const key = dateKey(day);
+      const wIdx = dates.indexOf(key);
+      const isToday = offset === 0;
+      const isPast = offset < 0;
+
+      const dayInfo = { offset, key, day, isPast, isToday, entries: logByDate[key] || [], slots: [] };
+
+      let pill = "", durationLabel = "", slotCount = "";
+
+      const entries = logByDate[key] || [];
+      const hasLog = entries.length > 0;
+
+      if (hasLog) {
+        const total = entries.reduce((s, e) => s + (e.total_duration_min || 0), 0);
+        const lastDec = entries[entries.length - 1].decision || "—";
+        pill = `<span class="pill ${lastDec.toLowerCase()}">${lastDec}</span>`;
+        durationLabel = `${Math.round(total)} min`;
+        slotCount = entries.length > 1 ? `${entries.length} slots` : `1 slot`;
+        dayInfo.slots = entries;
+      }
+
+      if (!isPast && wIdx >= 0) {
+        // Compute prediction (for today if no log, for future days)
+        const rain48 = (daily.precipitation_sum[wIdx-2] || 0) + (daily.precipitation_sum[wIdx-1] || 0);
+        const rainToday = daily.precipitation_sum[wIdx] || 0;
+        const probToday = daily.precipitation_probability_max[wIdx] || 0;
+        const et0 = daily.et0_fao_evapotranspiration[wIdx] || 0;
+        let dry = 0;
+        for (let i = wIdx - 1; i >= 0; i--) {
+          if ((daily.precipitation_sum[i] || 0) < 1) dry++; else break;
+        }
+        const month = day.getMonth() + 1;
+        const { decision, ch0_sec } = decideForDay(rain48, rainToday, probToday, et0, dry, month);
+        const ch0Min = ch0_sec / 60;
+        const ch1Min = 15;
+        const totalMinPerSlot = (decision === "SKIP") ? 0 : (2 * ch0Min + 2 * ch1Min);
+        dayInfo.prediction = {
+          decision, ch0Min, ch1Min, totalMinPerSlot,
+          numSlots: numSlotsPerDay, totalMin: totalMinPerSlot * numSlotsPerDay,
+          rain48: rain48.toFixed(1), rainToday: rainToday.toFixed(1), probToday, et0: et0.toFixed(2), dryDays: dry
+        };
+        if (!hasLog) {
+          pill = `<span class="pill ${decision.toLowerCase()}">${decision}</span>`;
+          durationLabel = `prev ${Math.round(totalMinPerSlot * numSlotsPerDay)} min`;
+          slotCount = numSlotsPerDay > 1 ? `${numSlotsPerDay} slots` : `1 slot`;
+        }
+      }
+
+      if (!pill) pill = `<span class="pill predicted">—</span>`;
+      matrixDays.push(dayInfo);
+
+      const cls = (isToday ? "today" : (isPast ? "past" : "future")) + (hasLog ? " has-data" : "");
+      cells.push(`
+        <div class="day ${cls}" onclick="openDay(${matrixDays.length - 1})">
+          <div class="day-name">${dayName(day)}</div>
+          <div class="day-num">${day.getDate()}</div>
+          ${pill}
+          <div class="dur">${durationLabel}</div>
+          <div class="slot-count">${slotCount}</div>
+        </div>
+      `);
+    }
+    root.innerHTML = cells.join("");
+  } catch (e) {
+    root.innerHTML = `<div class="muted" style="grid-column:1/-1">Erro: ${e.message}</div>`;
+  }
+}
+
+function openDay(idx) {
+  const d = matrixDays[idx];
+  if (!d) return;
+  const detail = document.getElementById("day-detail");
+  const fullDate = d.day.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
+  let inner = `<h3>${fullDate}</h3>`;
+
+  if (d.slots.length > 0) {
+    inner += d.slots.map(e => {
+      const dec = (e.decision || "").toLowerCase();
+      const zonesHtml = (e.zones && Array.isArray(e.zones))
+        ? e.zones.map(z => `
+            <div class="zone-line">
+              <span>${z.name}<span class="muted"> (ch${z.channel})</span></span>
+              <span class="${z.completed ? 'ok' : 'ko'}">${z.duration_min} min ${z.completed ? '✓' : '⏹'}</span>
+            </div>`).join("")
+        : `<div class="muted">${e.zones_watered ? e.zones_watered.join(", ") : "—"}</div>`;
+      return `<div class="slot-block">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px">
+          <strong>${e.time || ""}</strong>
+          <span class="pill ${dec}">${e.decision}</span>
+        </div>
+        <div class="muted" style="font-size:11px; margin-bottom:6px">
+          chuva 48h: ${e.rain_48h_mm ?? '—'}mm · et0: ${e.et0_mm ?? '—'}mm · dias secos: ${e.dry_days ?? '—'}
+        </div>
+        ${zonesHtml}
+        <div style="margin-top:6px; font-size:12px"><strong>Total:</strong> ${e.total_duration_min || 0} min</div>
+        ${e.reason ? `<div class="muted" style="font-size:11px; margin-top:4px">${e.reason}</div>` : ''}
+      </div>`;
+    }).join("");
+  }
+
+  if (!d.isPast && d.prediction) {
+    const p = d.prediction;
+    const label = d.isToday && d.slots.length > 0 ? "Previsão alternativa (hoje já correu)" : (d.isToday ? "Previsto para hoje" : "Previsto");
+    inner += `<div class="slot-block" style="opacity: ${d.slots.length > 0 ? 0.7 : 1}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px">
+        <strong>${label}</strong>
+        <span class="pill ${p.decision.toLowerCase()}">${p.decision}</span>
+      </div>
+      <div class="muted" style="font-size:11px; margin-bottom:6px">
+        chuva 48h: ${p.rain48}mm · hoje: ${p.rainToday}mm · prob: ${p.probToday}% · et0: ${p.et0}mm · dias secos: ${p.dryDays}
+      </div>
+      ${p.decision !== "SKIP" ? `
+        <div class="zone-line"><span>oliveira (ch0)</span><span>${p.ch0Min.toFixed(1)} min</span></div>
+        <div class="zone-line"><span>norte (ch1)</span><span>${p.ch1Min} min</span></div>
+        <div class="zone-line"><span>entrada (ch0)</span><span>${p.ch0Min.toFixed(1)} min</span></div>
+        <div class="zone-line"><span>cozinha (ch1)</span><span>${p.ch1Min} min</span></div>
+        <div style="margin-top:6px; font-size:12px"><strong>Total/slot:</strong> ${p.totalMinPerSlot.toFixed(1)} min × ${p.numSlots} slot${p.numSlots > 1 ? 's' : ''} = ${p.totalMin.toFixed(0)} min</div>
+      ` : '<div class="muted">Sem rega prevista.</div>'}
+    </div>`;
+  }
+
+  if (d.slots.length === 0 && !d.prediction) {
+    inner += '<div class="muted">Sem dados.</div>';
+  }
+
+  detail.innerHTML = inner;
+  detail.classList.add("show");
+}
+
+// ============================================================================
+// Setup / lifecycle
+// ============================================================================
+function saveSetup() {
+  const s = document.getElementById("setup-shelly").value.trim();
+  const g = document.getElementById("setup-github").value.trim();
+  if (!s || !g) return toast("Preenche os dois campos", "error");
+  SHELLY_KEY = s; GH_TOKEN = g;
+  localStorage.setItem("irrig_shelly", s);
+  localStorage.setItem("irrig_github", g);
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  refreshAll();
+}
+
+function resetSecrets() {
+  if (!confirm("Limpar credenciais?")) return;
+  localStorage.removeItem("irrig_shelly");
+  localStorage.removeItem("irrig_github");
+  location.reload();
+}
+
+function toast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+async function refreshAll() {
+  const btn = document.getElementById("refresh-btn");
+  btn.textContent = "⏳"; btn.disabled = true;
+  pausedState = null; updatePauseUI();
+  try {
+    await refreshRelays();
+    await getPauseState();
+    await loadRuns();
+    await checkActiveRun();
+    await loadLog();
+    await loadSchedule();
+    await loadMatrix();
+    updateLiveBanner();
+    adjustPollRate();
+  } catch (e) { toast("Erro: " + e.message, "error"); }
+  btn.textContent = "↻"; btn.disabled = false;
+}
+
+function enterApp() {
+  if (!SHELLY_KEY || !GH_TOKEN) {
+    document.getElementById("setup").style.display = "block";
+  } else {
+    document.getElementById("app").style.display = "block";
+    refreshAll();
+    pollHandle = setInterval(pollTick, pollIntervalMs);
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (sessionStorage.getItem("auth_ok") === "1") {
+    enterApp();
+  } else {
+    document.getElementById("login").style.display = "block";
+  }
+});
+</script>
+</body>
+</html>
