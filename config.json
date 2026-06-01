@@ -21,5 +21,19 @@
       "deck_sala_jantar": { "enabled": true },
       "fachada_frente": { "enabled": true }
     }
+  },
+  "brisas": {
+    "zones": {
+      "oliveira": {
+        "enabled": true,
+        "open":  { "mode": "sunrise", "time": "08:00", "offset": 15 },
+        "close": { "mode": "sunset",  "time": "21:00", "offset": -15 }
+      },
+      "cozinha": {
+        "enabled": true,
+        "open":  { "mode": "fixed", "time": "08:00", "offset": 0 },
+        "close": { "mode": "fixed", "time": "21:00", "offset": 0 }
+      }
+    }
   }
 }
