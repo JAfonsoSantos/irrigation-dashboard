@@ -1,9 +1,25 @@
 {
-  "start_time": "04:00",
+  "start_time": "06:00",
   "zones": {
-    "norte": 8,
-    "oliveira": 10,
-    "cozinha": 8,
+    "norte": 15,
+    "oliveira": 15,
+    "cozinha": 15,
     "entrada": 15
+  },
+  "lighting": {
+    "sunset_offset_min": 0,
+    "off_time_weekdays": "01:00",
+    "off_time_weekend": "02:30",
+    "weekend_days": [5, 6],
+    "vacation_mode": false,
+    "zones": {
+      "jardim_norte": { "enabled": true },
+      "oliveira_acer": { "enabled": true },
+      "jardim_entrada": { "enabled": true },
+      "deck_sul": { "enabled": true },
+      "deck_cozinha": { "enabled": true },
+      "deck_sala_jantar": { "enabled": true },
+      "fachada_frente": { "enabled": true }
+    }
   }
 }
