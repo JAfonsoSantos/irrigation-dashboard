@@ -41,19 +41,6 @@
   },
   "brisas": {
     "zones": {
-      "corredor": {
-        "enabled": true,
-        "open": {
-          "mode": "fixed",
-          "time": "08:00",
-          "offset": 0
-        },
-        "close": {
-          "mode": "fixed",
-          "time": "21:00",
-          "offset": 0
-        }
-      },
       "oliveira": {
         "enabled": true,
         "open": {
@@ -71,13 +58,13 @@
         "enabled": true,
         "open": {
           "mode": "fixed",
-          "time": "08:00",
+          "time": "08:10",
           "offset": 0
         },
         "close": {
-          "mode": "fixed",
+          "mode": "sunset",
           "time": "21:00",
-          "offset": 0
+          "offset": 15
         }
       },
       "salamandra": {
@@ -130,6 +117,136 @@
           "mode": "fixed",
           "time": "21:00",
           "offset": 0
+        }
+      },
+      "deck_sala": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:00",
+          "offset": 0
+        },
+        "close": {
+          "mode": "fixed",
+          "time": "21:00",
+          "offset": 0
+        }
+      },
+      "corredor": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "wc_principal": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "quarto_mercedes": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "wc_meninas": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "blackout_principal": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "quarto_visitas_frente": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "quarto_visitas_tras": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "escritorio": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
+        }
+      },
+      "closet": {
+        "enabled": true,
+        "open": {
+          "mode": "fixed",
+          "time": "08:10",
+          "offset": 0
+        },
+        "close": {
+          "mode": "sunset",
+          "time": "21:00",
+          "offset": 15
         }
       }
     }
