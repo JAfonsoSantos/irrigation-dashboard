@@ -1,10 +1,10 @@
 {
   "start_time": "06:00",
   "zones": {
-    "norte": 15,
-    "oliveira": 15,
-    "cozinha": 15,
-    "entrada": 15
+    "norte": 8,
+    "oliveira": 10,
+    "cozinha": 8,
+    "entrada": 10
   },
   "lighting": {
     "sunset_offset_min": 0,
