@@ -17,7 +17,7 @@
     "vacation_mode": false,
     "zones": {
       "jardim_norte": {
-        "enabled": false
+        "enabled": true
       },
       "oliveira_acer": {
         "enabled": true
