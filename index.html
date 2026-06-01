@@ -10,9 +10,42 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.42.0/tabler-icons.min.css">
 <title>Rega Esposende</title>
 <style>
-:root{--g:#16a34a;--gd:#15803d;--gl:#dcfce7;--gll:#f0fdf4;--bg:#f6f7f8;--card:#fff;--text:#111827;--mut:#6b7280;--mut2:#9ca3af;--bor:#e5e7eb;--bor2:#d1d5db;--red:#dc2626;--ylw:#f59e0b;--blu:#185FA5;--blul:#e0f2fe;color-scheme:light;}
+:root{
+  --g:#16a34a;--gd:#15803d;--gl:#dcfce7;--gll:#f0fdf4;
+  --water:#0ea5e9;--water-d:#0369a1;--water-l:#e0f2fe;
+  --light:#f59e0b;--light-d:#b45309;--light-l:#fef3c7;
+  --brisa:#6b7280;--brisa-d:#374151;--brisa-l:#f3f4f6;
+  --bg:#f6f7f8;--card:#fff;--text:#111827;--mut:#6b7280;--mut2:#9ca3af;
+  --bor:#e5e7eb;--bor2:#d1d5db;--red:#dc2626;--ylw:#f59e0b;
+  --blu:#185FA5;--blul:#e0f2fe;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--mut:#94a3b8;--mut2:#64748b;
+  --bor:#334155;--bor2:#475569;
+  --gl:#064e3b;--gll:#022c22;--gd:#10b981;
+  --water-l:#0c4a6e;--light-l:#451a03;--brisa-l:#1f2937;
+  --blul:#1e3a8a;
+  color-scheme:dark;
+}
+[data-theme="dark"] .gate-card input,
+[data-theme="dark"] .slot-add input,
+[data-theme="dark"] .schedule-edit input,
+[data-theme="dark"] .stepper button,
+[data-theme="dark"] .chip,
+[data-theme="dark"] .play-zone,
+[data-theme="dark"] .light-zone,
+[data-theme="dark"] .brisa-zone,
+[data-theme="dark"] .dash-card,
+[data-theme="dark"] .log-block,
+[data-theme="dark"] .slot-item,
+[data-theme="dark"] .sched-card,
+[data-theme="dark"] .gate-card{background:var(--card);color:var(--text);}
+[data-theme="dark"] header{background:var(--bg);}
+[data-theme="dark"] nav.tabs{background:var(--card);}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;height:100%;}
 body{max-width:480px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;}
@@ -237,6 +270,66 @@ nav.tabs button:active{background:var(--gll);}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bor);border-top-color:var(--g);border-radius:50%;animation:spin 0.6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .hidden{display:none !important;}
+/* Tabler icon helpers */
+i.ti{font-style:normal;line-height:1;display:inline-block;}
+i.ti.lg{font-size:22px;}
+i.ti.xl{font-size:28px;}
+/* Skeleton loader */
+@keyframes skel{0%{background-position:-200px 0;}100%{background-position:calc(200px + 100%) 0;}}
+.skel{display:block;background:linear-gradient(90deg,var(--bor) 0,#e8e9eb 50%,var(--bor) 100%);background-size:200px 100%;animation:skel 1.2s infinite;border-radius:6px;}
+.skel-card{padding:16px;background:var(--card);border:1px solid var(--bor);border-radius:14px;margin-bottom:10px;}
+.skel-line{height:14px;margin-bottom:8px;}
+.skel-line.sm{height:10px;width:40%;}
+.skel-line.md{height:14px;width:70%;}
+.skel-line.lg{height:18px;width:90%;}
+/* Scenarios */
+.scenarios{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.scenario{background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.scenario:active{background:var(--gll);}
+.scenario i{font-size:28px;color:var(--text);}
+.scenario.s-out i{color:#ef4444;}
+.scenario.s-back i{color:var(--water);}
+.scenario.s-dinner i{color:var(--light);}
+.scenario.s-sleep i{color:#6366f1;}
+.scenario .lbl{font-size:13px;font-weight:600;}
+/* Next event card */
+.next-event{background:linear-gradient(135deg,var(--water-l) 0,var(--card) 100%);border:1px solid var(--water);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;}
+.next-event .ne-ico{width:42px;height:42px;border-radius:50%;background:var(--water);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.next-event .ne-time{font-size:20px;font-weight:600;}
+.next-event .ne-desc{font-size:13px;color:var(--mut);margin-top:2px;}
+[data-theme="dark"] .next-event{background:var(--card);}
+/* Timeline */
+.timeline{background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:14px;margin-bottom:12px;}
+.timeline .ttl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;margin-bottom:10px;}
+.timeline-track{position:relative;height:34px;background:var(--bor-l,#f8f9fa);border-radius:8px;overflow:hidden;}
+[data-theme="dark"] .timeline-track{background:#0f172a;}
+.timeline-hour{position:absolute;top:0;height:100%;width:1px;background:var(--bor);opacity:0.5;}
+.timeline-hour-lbl{position:absolute;bottom:-16px;font-size:9px;color:var(--mut);transform:translateX(-50%);}
+.timeline-event{position:absolute;top:6px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:14px;color:white;}
+.te-water{background:var(--water);}
+.te-light{background:var(--light);}
+.te-brisa{background:var(--brisa);}
+.timeline-now{position:absolute;top:-2px;width:2px;height:calc(100% + 4px);background:var(--red);z-index:2;}
+.timeline-now::before{content:"";position:absolute;top:-3px;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--red);}
+/* Lighting grid 2-col */
+.light-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.light-grid .light-zone{flex-direction:column;align-items:center;padding:14px 10px;gap:8px;text-align:center;}
+.light-grid .light-info .n{font-size:13px;}
+.light-grid .light-info .s{font-size:11px;}
+.light-grid .light-chev{display:none;}
+.light-grid .light-bulb{width:38px;height:38px;}
+/* Brisa visual window */
+.brisa-window{width:54px;height:64px;background:linear-gradient(to bottom,#bae6fd 0%,#7dd3fc 100%);border:2px solid var(--brisa-d);border-radius:6px;position:relative;overflow:hidden;flex-shrink:0;}
+.brisa-window .blind{position:absolute;left:0;right:0;top:0;background:repeating-linear-gradient(to bottom,#4b5563 0,#4b5563 4px,#374151 4px,#374151 6px);transition:height 0.5s ease;}
+[data-theme="dark"] .brisa-window{background:linear-gradient(to bottom,#1e3a8a,#1e293b);}
+.brisa-window .pct-label{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--brisa-d);background:rgba(255,255,255,0.85);padding:0 4px;border-radius:3px;}
+[data-theme="dark"] .brisa-window .pct-label{background:rgba(0,0,0,0.6);color:#e2e8f0;}
+/* Pull to refresh */
+.ptr{position:absolute;top:-50px;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mut);transition:transform 0.2s;}
+.ptr.pulling{transform:translateY(50px);}
+.ptr i{margin-right:6px;}
+/* Group divider */
+.group-label{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;margin:18px 0 8px;}
 </style>
 </head>
 <body>
@@ -266,11 +359,11 @@ nav.tabs button:active{background:var(--gll);}
 
 <div id="app" class="hidden">
   <header>
-    <h1><span class="drop">💧</span>Casa Esposende</h1>
+    <h1><i class="ti ti-droplet" style="color:var(--water);font-size:24px;"></i>Casa Esposende</h1>
     <div class="header-actions">
-      <button class="icon-btn" id="refresh-btn" onclick="refreshAll()" aria-label="Atualizar">↻</button>
-      <button class="icon-btn" onclick="switchView('manual')" aria-label="Manual">👆</button>
-      <button class="icon-btn" onclick="switchView('settings')" aria-label="Definições">⚙</button>
+      <button class="icon-btn" id="refresh-btn" onclick="refreshAll()" aria-label="Atualizar"><i class="ti ti-refresh"></i></button>
+      <button class="icon-btn" onclick="switchView('manual')" aria-label="Manual"><i class="ti ti-hand-finger"></i></button>
+      <button class="icon-btn" onclick="switchView('settings')" aria-label="Definições"><i class="ti ti-settings"></i></button>
     </div>
   </header>
 
@@ -376,10 +469,10 @@ nav.tabs button:active{background:var(--gll);}
   </div>
 
   <nav class="tabs">
-    <button data-view="home" class="active" onclick="switchView('home')"><span class="ico">🏠</span><span>início</span></button>
-    <button data-view="lighting" onclick="switchView('lighting')"><span class="ico">💡</span><span>luzes</span></button>
-    <button data-view="brisas" onclick="switchView('brisas')"><span class="ico">🪟</span><span>brisas</span></button>
-    <button data-view="rega" onclick="switchView('rega')"><span class="ico">💧</span><span>rega</span></button>
+    <button data-view="home" class="active" onclick="switchView('home')"><i class="ti ti-home"></i><span>início</span></button>
+    <button data-view="lighting" onclick="switchView('lighting')"><i class="ti ti-bulb"></i><span>luzes</span></button>
+    <button data-view="brisas" onclick="switchView('brisas')"><i class="ti ti-window"></i><span>brisas</span></button>
+    <button data-view="rega" onclick="switchView('rega')"><i class="ti ti-droplet"></i><span>rega</span></button>
   </nav>
 </div>
 
@@ -486,7 +579,7 @@ function activeZone(){for(const z of ZONES){if(relayStates[z.device]?.[z.channel
 async function fetchWeather(){const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration,temperature_2m_max,sunrise,sunset&past_days=7&forecast_days=7&timezone=Europe%2FLisbon`;const r=await fetch(url);weatherData=await r.json();return weatherData;}
 
 // Rain classification adapted from IPMA thresholds (daily totals, mm)
-function rainLabel(mm,prob){if(mm==null||mm<0.1){if(prob>=60)return{txt:"chance de chuva",cls:"r-maybe",ico:"⛅",sub:`${prob}% de chance`};return{txt:"sem chuva",cls:"r-none",ico:"☀",sub:null};}const m=+mm.toFixed(1);if(mm<2)return{txt:"chuva fraca",cls:"r-light",ico:"🌦",sub:`${m}mm`};if(mm<10)return{txt:"chuva moderada",cls:"r-mod",ico:"🌧",sub:`${m}mm`};if(mm<25)return{txt:"chuva forte",cls:"r-strong",ico:"⛈",sub:`${m}mm`};return{txt:"muita chuva",cls:"r-vstrong",ico:"⛈",sub:`${m}mm`};}
+function rainLabel(mm,prob){if(mm==null||mm<0.1){if(prob>=60)return{txt:"chance de chuva",cls:"r-maybe",ico:'<i class="ti ti-cloud"></i>',sub:`${prob}% de chance`};return{txt:"sem chuva",cls:"r-none",ico:'<i class="ti ti-sun"></i>',sub:null};}const m=+mm.toFixed(1);if(mm<2)return{txt:"chuva fraca",cls:"r-light",ico:'<i class="ti ti-cloud-rain"></i>',sub:`${m}mm`};if(mm<10)return{txt:"chuva moderada",cls:"r-mod",ico:'<i class="ti ti-cloud-rain"></i>',sub:`${m}mm`};if(mm<25)return{txt:"chuva forte",cls:"r-strong",ico:'<i class="ti ti-cloud-storm"></i>',sub:`${m}mm`};return{txt:"muita chuva",cls:"r-vstrong",ico:'<i class="ti ti-cloud-storm"></i>',sub:`${m}mm`};}
 function fmtWeekday(d){return ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];}
 
 function decideForDay(idx){const d=weatherData.daily;const rain48=(d.precipitation_sum[idx-2]||0)+(d.precipitation_sum[idx-1]||0);const rainToday=d.precipitation_sum[idx]||0;const probToday=d.precipitation_probability_max[idx]||0;const et0=d.et0_fao_evapotranspiration[idx]||0;const tMax=d.temperature_2m_max?.[idx]||null;let dry=0;for(let i=idx-1;i>=0;i--){if((d.precipitation_sum[i]||0)<1)dry++;else break;}let decision,factor;if(rain48>5||(probToday>70&&rainToday>3)){decision="SKIP";factor=0;}else if(rain48>=2&&rain48<=5){decision="REDUCED";factor=0.5;}else{decision="NORMAL";factor=1.0;}return{decision,factor,rain48:+rain48.toFixed(1),rainToday:+rainToday.toFixed(1),probToday,et0:+et0.toFixed(1),dry,tMax};}
@@ -524,7 +617,7 @@ function renderRega(){renderHome();}
 function fmtDate(d){return d.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"short"}).toLowerCase();}
 function dateKey(d){return d.toISOString().slice(0,10);}
 
-function renderHome(){if(!weatherData)return;const c=document.getElementById("cards-container");c.innerHTML="";const today=new Date().toISOString().slice(0,10);const todayIdx=weatherData.daily.time.indexOf(today);for(let off=-1;off<=5;off++){const d=new Date();d.setDate(d.getDate()+off);const idx=todayIdx+off;const dk=dateKey(d);const isToday=off===0;const isFuture=off>0;const label=off===-1?"ontem":off===0?"hoje":off===1?"amanhã":fmtWeekday(d);const logs=getLogForDate(dk);let iconHtml='<span class="ico m">○</span>';let mainHtml="";let noteHtml="";let rainHtml="";if(logs.length>0){const last=logs[logs.length-1];if(last.decision==="SKIP"||last.decision==="PAUSED"){iconHtml='<span class="ico r">⏭</span>';mainHtml=last.decision==="PAUSED"?"rega pausada":"não regou — solo já húmido";}else{iconHtml='<span class="ico g">✓</span>';const total=logs.reduce((s,e)=>s+(e.total_duration_min||0),0);const times=logs.map(e=>e.time).join(", ");mainHtml=`regou às ${times} — ${Math.round(total)}min`;if(last.decision==="REDUCED")noteHtml=`<div class="day-note today">meia rega — choveu ${last.rain_48h_mm}mm</div>`;}}else if(off>=0&&idx>=0&&idx<weatherData.daily.time.length){const plan=decideForDay(idx);if(plan.decision==="SKIP"){iconHtml='<span class="ico r">⏭</span>';mainHtml=isToday?"vai dar skip — chuva":"skip — chuva prevista";}else{iconHtml='<span class="ico m">⏱</span>';const total=totalMinutesForDay(plan.factor);mainHtml=isToday?`agendado ${config.start_time} · ${total}min`:`prev. ${total}min · ${config.start_time}`;}const mm=weatherData.daily.precipitation_sum[idx]||0;const prob=weatherData.daily.precipitation_probability_max[idx]||0;const r=rainLabel(mm,prob);rainHtml=`<div class="rain-pill ${r.cls}"><span class="ic">${r.ico}</span><span>${r.txt}</span>${r.sub?`<span class="mm">${r.sub}</span>`:''}</div>`;}else{mainHtml="sem dados";}const card=document.createElement("button");card.className="card"+(isToday?" card-today":"");card.innerHTML=`<div class="eyebrow${isToday?' eyebrow-today':''}">${label}</div><div class="day-title">${fmtDate(d)}</div><div class="day-row"><div class="l">${iconHtml}<span>${mainHtml}</span></div><span class="chev">›</span></div>${rainHtml}${noteHtml}`;card.onclick=()=>openDay(off);c.appendChild(card);}}
+function renderHome(){if(!weatherData)return;const c=document.getElementById("cards-container");c.innerHTML="";const today=new Date().toISOString().slice(0,10);const todayIdx=weatherData.daily.time.indexOf(today);for(let off=-1;off<=5;off++){const d=new Date();d.setDate(d.getDate()+off);const idx=todayIdx+off;const dk=dateKey(d);const isToday=off===0;const isFuture=off>0;const label=off===-1?"ontem":off===0?"hoje":off===1?"amanhã":fmtWeekday(d);const logs=getLogForDate(dk);let iconHtml='<span class="ico m">○</span>';let mainHtml="";let noteHtml="";let rainHtml="";if(logs.length>0){const last=logs[logs.length-1];if(last.decision==="SKIP"||last.decision==="PAUSED"){iconHtml='<i class="ti ti-player-skip-forward" style="color:var(--ylw);font-size:18px;"></i>';mainHtml=last.decision==="PAUSED"?"rega pausada":"não regou — solo já húmido";}else{iconHtml='<i class="ti ti-check" style="color:var(--g);font-size:18px;"></i>';const total=logs.reduce((s,e)=>s+(e.total_duration_min||0),0);const times=logs.map(e=>e.time).join(", ");mainHtml=`regou às ${times} — ${Math.round(total)}min`;if(last.decision==="REDUCED")noteHtml=`<div class="day-note today">meia rega — choveu ${last.rain_48h_mm}mm</div>`;}}else if(off>=0&&idx>=0&&idx<weatherData.daily.time.length){const plan=decideForDay(idx);if(plan.decision==="SKIP"){iconHtml='<i class="ti ti-player-skip-forward" style="color:var(--ylw);font-size:18px;"></i>';mainHtml=isToday?"vai dar skip — chuva":"skip — chuva prevista";}else{iconHtml='<i class="ti ti-clock" style="color:var(--mut);font-size:18px;"></i>';const total=totalMinutesForDay(plan.factor);mainHtml=isToday?`agendado ${config.start_time} · ${total}min`:`prev. ${total}min · ${config.start_time}`;}const mm=weatherData.daily.precipitation_sum[idx]||0;const prob=weatherData.daily.precipitation_probability_max[idx]||0;const r=rainLabel(mm,prob);rainHtml=`<div class="rain-pill ${r.cls}"><span class="ic">${r.ico}</span><span>${r.txt}</span>${r.sub?`<span class="mm">${r.sub}</span>`:''}</div>`;}else{mainHtml="sem dados";}const card=document.createElement("button");card.className="card"+(isToday?" card-today":"");card.innerHTML=`<div class="eyebrow${isToday?' eyebrow-today':''}">${label}</div><div class="day-title">${fmtDate(d)}</div><div class="day-row"><div class="l">${iconHtml}<span>${mainHtml}</span></div><span class="chev">›</span></div>${rainHtml}${noteHtml}`;card.onclick=()=>openDay(off);c.appendChild(card);}}
 
 function openDay(off){detailContext={off};document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-day").classList.add("active");renderDayDetail();}
 function closeDay(){switchView(currentView);}
@@ -533,7 +626,7 @@ function renderDayDetail(){const off=detailContext.off;const d=new Date();d.setD
 
 function renderLogsForDay(logs){return logs.map(e=>{const dec=(e.decision||"").toLowerCase();const zonesHtml=(e.zones&&Array.isArray(e.zones))?e.zones.map(z=>`<div class="log-zone-line"><span>${z.name}</span><span class="${z.completed?'ok':'ko'}">${z.duration_min} min ${z.completed?'✓':'⚠'}</span></div>`).join(""):`<div class="muted" style="font-size:12px;">${(e.zones_watered||[]).join(", ")}</div>`;return `<div class="log-block"><div class="hdr"><strong>${e.time||""}</strong><span class="pill ${dec}">${e.decision}</span></div><div class="meta">chuva 48h: ${e.rain_48h_mm??"—"}mm · et0: ${e.et0_mm??"—"}mm · dias secos: ${e.dry_days??"—"}</div>${zonesHtml}<div style="margin-top:8px;font-size:13px;"><strong>Total:</strong> ${e.total_duration_min||0} min</div>${e.reason?`<div class="muted" style="font-size:11px;margin-top:4px;">${e.reason}</div>`:''}</div>`;}).join("");}
 
-function renderSkipOverride(idx){const plan=decideForDay(idx);const hot=plan.tMax!==null&&plan.tMax>28;return `<div class="skip-icon-block"><span class="ico">⏭</span><div><div class="t1">Rega cancelada hoje</div><div class="t2">solo já saturado</div></div></div><div class="skip-info"><span class="ico">☔</span><div>Choveu ${plan.rain48}mm nas últimas 48h${plan.rainToday>0?` e ${plan.rainToday}mm previstos hoje`:''}.</div></div><div style="font-size:14px;font-weight:500;margin-bottom:10px;">Regar mesmo assim?</div><div class="chips"><button class="chip${!hot?' chip-primary':''}" onclick="skipOverride('now')">já</button><button class="chip${hot?' chip-primary':''}" onclick="skipOverride('evening')">esta noite</button><button class="chip" onclick="skipOverride('tomorrow')">amanhã cedo</button></div>${hot?`<div class="skip-warn"><span class="ico">ℹ</span><span>Está ${Math.round(plan.tMax)}°C — recomendamos esta noite para reduzir evaporação.</span></div>`:''}`;}
+function renderSkipOverride(idx){const plan=decideForDay(idx);const hot=plan.tMax!==null&&plan.tMax>28;return `<div class="skip-icon-block"><i class="ti ti-player-skip-forward" style="font-size:28px;"></i><div><div class="t1">Rega cancelada hoje</div><div class="t2">solo já saturado</div></div></div><div class="skip-info"><i class="ti ti-cloud-rain"></i><div>Choveu ${plan.rain48}mm nas últimas 48h${plan.rainToday>0?` e ${plan.rainToday}mm previstos hoje`:''}.</div></div><div style="font-size:14px;font-weight:500;margin-bottom:10px;">Regar mesmo assim?</div><div class="chips"><button class="chip${!hot?' chip-primary':''}" onclick="skipOverride('now')">já</button><button class="chip${hot?' chip-primary':''}" onclick="skipOverride('evening')">esta noite</button><button class="chip" onclick="skipOverride('tomorrow')">amanhã cedo</button></div>${hot?`<div class="skip-warn"><i class="ti ti-info-circle"></i><span>Está ${Math.round(plan.tMax)}°C — recomendamos esta noite para reduzir evaporação.</span></div>`:''}`;}
 
 function renderEditMode(){editState=JSON.parse(JSON.stringify(config));editState.applyAll=false;editState.dirty=false;setTimeout(refreshEditUI,10);return `<div class="section-label">Hora de início</div><div class="time-edit"><input type="time" id="edit-start" value="${config.start_time}" onchange="onEditStartChange()"><span class="ed-ico">✎</span></div><div class="section-label">Duração por zona</div><div id="edit-zones"></div><div class="toggle-row"><div class="toggle" id="edit-applyall-toggle" onclick="toggleApplyAll()"></div><div><div class="toggle-label">Aplicar a todas as zonas</div><div class="toggle-sub">o valor de uma zona aplica-se a todas as editáveis</div></div></div><button class="btn-primary" id="edit-save-btn" onclick="saveEdit()" disabled>Guardar como novo padrão</button><div class="muted center" style="font-size:11px;margin-top:8px;">Aplica-se a partir de amanhã.</div>`;}
 function onEditStartChange(){editState.start_time=document.getElementById("edit-start").value;editState.dirty=true;document.getElementById("edit-save-btn").disabled=false;}
@@ -548,7 +641,7 @@ function renderSettings(){const slotsRoot=document.getElementById("slots-contain
 function updateLightOffset(v){if(!config.lighting)config.lighting={};config.lighting.sunset_offset_min=parseInt(v)||0;saveConfig().then(()=>toast("Offset guardado","success")).catch(e=>toast("Erro: "+e.message,"error"));}
 function updateLightOff(field,v){if(!config.lighting)config.lighting={};config.lighting[field]=v;saveConfig().then(()=>toast("Horário guardado","success")).catch(e=>toast("Erro: "+e.message,"error"));}
 
-function renderBanners(){const root=document.getElementById("banners");let html="";const active=activeZone();if(active)html+=`<div class="banner banner-live"><span class="ico">●</span><span>A regar: <strong>${active.label}</strong></span></div>`;if(pausedState===true)html+=`<div class="banner banner-warn"><span class="ico">⏸</span><span>Cron pausado — sem rega automática.</span></div>`;root.innerHTML=html;}
+function renderBanners(){const root=document.getElementById("banners");let html="";const active=activeZone();if(active)html+=`<div class="banner banner-live"><i class="ti ti-circle-filled"></i><span>A regar: <strong>${active.label}</strong></span></div>`;if(pausedState===true)html+=`<div class="banner banner-warn"><i class="ti ti-player-pause"></i><span>Cron pausado — sem rega automática.</span></div>`;root.innerHTML=html;}
 
 async function refreshAll(){const btn=document.getElementById("refresh-btn");btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;try{await Promise.all([loadConfig(),fetchWeather(),loadLog(),loadSchedule(),loadPause(),refreshRelays(),refreshLightRelays(),refreshBrisas()]);renderBanners();if(currentView==="home")renderDashboard();else if(currentView==="rega")renderRega();else if(currentView==="lighting")renderLighting();else if(currentView==="brisas")renderBrisasView();else if(currentView==="manual")renderManual();else if(currentView==="settings")renderSettings();}catch(e){toast("Erro: "+e.message,"error");}finally{btn.innerHTML="↻";btn.disabled=false;}}
 
@@ -559,7 +652,7 @@ async function lightToggle(name){const z=LIGHT_ZONES.find(x=>x.name===name);if(!
 async function lightAllOn(){if(!confirm("Ligar todas as zonas exteriores?"))return;for(const z of LIGHT_ZONES){if(!config.lighting.zones[z.name]?.enabled)continue;try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on"});}catch{}await new Promise(r=>setTimeout(r,300));}await new Promise(r=>setTimeout(r,1000));await refreshLightRelays();renderLighting();toast("Todas ligadas","success");}
 async function lightAllOff(){if(!confirm("Desligar todas as zonas exteriores?"))return;for(const z of LIGHT_ZONES){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});}catch{}await new Promise(r=>setTimeout(r,300));}await new Promise(r=>setTimeout(r,1000));await refreshLightRelays();renderLighting();toast("Todas desligadas","success");}
 
-function renderLighting(){const sub=document.getElementById("lighting-sub");const onCount=LIGHT_ZONES.filter(z=>lightIsOn(z)).length;const sunset=weatherData?.daily?.sunset?.[7]||null;const sunsetTxt=sunset?sunset.slice(11):"?";sub.textContent=`${onCount} de ${LIGHT_ZONES.length} ligadas · pôr-do-sol hoje ${sunsetTxt}`;const root=document.getElementById("lighting-zones");root.innerHTML=LIGHT_ZONES.map(z=>{const on=lightIsOn(z);const enabled=config.lighting.zones[z.name]?.enabled!==false;const off=config.lighting.zones[z.name]?.off_time;return `<div class="light-zone ${on?'on':''} ${!enabled?'disabled':''}" onclick="openLightZone('${z.name}')"><div class="light-bulb">💡</div><div class="light-info"><div class="n">${z.label}</div><div class="s ${on?'on':''}">${on?'ligada':enabled?'auto ao pôr-do-sol':'auto desactivado'}${off?` · off ${off}`:''}</div></div><div class="light-chev">›</div></div>`;}).join("");}
+function renderLighting(){const sub=document.getElementById("lighting-sub");const onCount=LIGHT_ZONES.filter(z=>lightIsOn(z)).length;const sunset=weatherData?.daily?.sunset?.[7]||null;const sunsetTxt=sunset?sunset.slice(11):"?";sub.textContent=`${onCount} de ${LIGHT_ZONES.length} ligadas · pôr-do-sol hoje ${sunsetTxt}`;const root=document.getElementById("lighting-zones");root.className="light-grid";root.innerHTML=LIGHT_ZONES.map(z=>{const on=lightIsOn(z);const enabled=config.lighting.zones[z.name]?.enabled!==false;const off=config.lighting.zones[z.name]?.off_time;return `<div class="light-zone ${on?'on':''} ${!enabled?'disabled':''}" onclick="openLightZone('${z.name}')"><div class="light-bulb"><i class="ti ti-bulb"></i></div><div class="light-info"><div class="n">${z.label}</div><div class="s ${on?'on':''}">${on?'ligada':enabled?'auto ao pôr-do-sol':'auto desactivado'}${off?` · off ${off}`:''}</div></div><div class="light-chev">›</div></div>`;}).join("");}
 
 function openLightZone(name){editLightZone=name;document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-light-zone").classList.add("active");renderLightZoneDetail();}
 function closeLightZone(){switchView("lighting");}
@@ -569,6 +662,20 @@ function toggleLightZoneEnabled(name){if(!config.lighting.zones[name])config.lig
 // === Dashboard (Início) ===
 async function fetchSunset(){if(!weatherData)return null;const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);if(idx<0)return null;return{sunrise:weatherData.daily.sunrise?.[idx],sunset:weatherData.daily.sunset?.[idx]};}
 async function toggleVacation(){if(!config.lighting)config.lighting={};config.lighting.vacation_mode=!config.lighting.vacation_mode;try{await saveConfig();toast(`Modo férias ${config.lighting.vacation_mode?'ativado':'desactivado'}`,"success");renderDashboard();}catch(e){toast("Erro: "+e.message,"error");}}
+
+// === Cenários ===
+async function cenarioSair(){if(!confirm("Sair de casa? Fecha brisas + desliga todas as luzes"))return;toast("A executar 'Sair'…","success");for(const z of BRISA_ZONES){try{await brisaCall(z,"close");}catch{};await new Promise(r=>setTimeout(r,400));}for(const z of LIGHT_ZONES){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});}catch{};await new Promise(r=>setTimeout(r,300));}await refreshAll();toast("Cenário 'Sair' aplicado","success");}
+async function cenarioVoltar(){toast("A executar 'Voltar'…","success");// Open Corredor and Cozinha brisas, turn on entrada + fachada lights
+for(const name of ["corredor","cozinha"]){const z=BRISA_ZONES.find(x=>x.name===name);if(z){try{await brisaCall(z,"open");}catch{};await new Promise(r=>setTimeout(r,400));}}for(const name of ["jardim_entrada","fachada_frente"]){const z=LIGHT_ZONES.find(x=>x.name===name);if(z){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on"});}catch{};await new Promise(r=>setTimeout(r,300));}}await refreshAll();toast("Cenário 'Voltar' aplicado","success");}
+async function cenarioJantar(){toast("A executar 'Jantar'…","success");// Close sala brisas to 50%, dining + kitchen lights on
+for(const name of ["sala_estar","sala_jantar"]){const z=BRISA_ZONES.find(x=>x.name===name);if(z){try{await brisaCall(z,50);}catch{};await new Promise(r=>setTimeout(r,400));}}for(const name of ["deck_cozinha","deck_sala_jantar"]){const z=LIGHT_ZONES.find(x=>x.name===name);if(z){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"on"});}catch{};await new Promise(r=>setTimeout(r,300));}}await refreshAll();toast("Cenário 'Jantar' aplicado","success");}
+async function cenarioDormir(){if(!confirm("Dormir? Fecha todas as brisas + desliga todas as luzes"))return;toast("A executar 'Dormir'…","success");for(const z of BRISA_ZONES){try{await brisaCall(z,"close");}catch{};await new Promise(r=>setTimeout(r,400));}for(const z of LIGHT_ZONES){try{await shellyCall("/device/relay/control",{id:z.device,channel:z.channel,turn:"off"});}catch{};await new Promise(r=>setTimeout(r,300));}await refreshAll();toast("Cenário 'Dormir' aplicado","success");}
+
+// === Dark mode auto ===
+function applyAutoTheme(){if(!weatherData)return;const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);if(idx<0)return;const now=new Date();const sunsetStr=weatherData.daily.sunset?.[idx];const sunriseStr=weatherData.daily.sunrise?.[idx];if(!sunsetStr||!sunriseStr)return;const sunset=new Date(sunsetStr);const sunrise=new Date(sunriseStr);const isDark=now>=sunset||now<sunrise;document.documentElement.setAttribute("data-theme",isDark?"dark":"light");}
+
+// === Pull-to-refresh ===
+function setupPullToRefresh(){const sa=document.querySelector(".scroll-area");if(!sa)return;let startY=0;let pulling=false;let ptr=document.createElement("div");ptr.className="ptr";ptr.innerHTML='<i class="ti ti-refresh"></i> puxe para atualizar';sa.style.position="relative";sa.appendChild(ptr);sa.addEventListener("touchstart",e=>{if(sa.scrollTop===0){startY=e.touches[0].clientY;pulling=true;}});sa.addEventListener("touchmove",e=>{if(!pulling)return;const dy=e.touches[0].clientY-startY;if(dy>70){ptr.classList.add("pulling");ptr.innerHTML='<i class="ti ti-arrow-up"></i> solte para atualizar';}});sa.addEventListener("touchend",async e=>{if(!pulling)return;const dy=e.changedTouches[0].clientY-startY;pulling=false;if(dy>70){ptr.innerHTML='<i class="ti ti-loader"></i> a atualizar…';await refreshAll();}ptr.classList.remove("pulling");ptr.innerHTML='<i class="ti ti-refresh"></i> puxe para atualizar';});}
 // === Brisas ===
 async function brisaCall(zone, position){const url=`${SHELLY_BASE}/v2/devices/api/set/cover?auth_key=${encodeURIComponent(SHELLY_KEY)}`;const body={id:zone.device,channel:zone.channel,position:position};return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
 async function refreshBrisas(){const states={};for(const z of BRISA_ZONES){let r=null;for(let a=1;a<=2;a++){try{const res=await shellyCall("/device/status",{id:z.device});const rollers=res?.data?.device_status?.rollers||[];if(rollers.length>z.channel){r=rollers[z.channel];break;}}catch{}if(a<2)await new Promise(r=>setTimeout(r,500));}states[z.name]=r;}brisaStates=states;}
@@ -579,48 +686,63 @@ async function brisaClose(name){const z=BRISA_ZONES.find(x=>x.name===name);if(!z
 async function brisaStop(name){const z=BRISA_ZONES.find(x=>x.name===name);if(!z)return;try{await brisaCall(z,"stop");toast(`${z.label}: parada`,"success");setTimeout(()=>{refreshBrisas().then(()=>renderBrisasView());},1500);}catch(e){toast("Erro: "+e.message,"error");}}
 async function brisaGoTo(name,pos){const z=BRISA_ZONES.find(x=>x.name===name);if(!z)return;try{await brisaCall(z,pos);toast(`${z.label}: ir para ${pos}%`,"success");setTimeout(()=>{refreshBrisas().then(()=>renderBrisaZoneDetail());},2000);}catch(e){toast("Erro: "+e.message,"error");}}
 
-function renderBrisasView(){const root=document.getElementById("brisas-zones");if(!root)return;root.innerHTML=BRISA_ZONES.map(z=>{const pos=brisaPos(z);const state=brisaState(z);const moving=state==="open"||state==="close";const posPct=(pos!=null)?Math.min(100,Math.max(0,pos)):null;const stateTxt=state==="open"?"a abrir":state==="close"?"a fechar":pos==null?"?":pos>=95?"aberto":pos<=5?"fechado":`${posPct}% aberto`;const bz=config.brisas?.zones?.[z.name]||{};const schedTxt=(bz.open?.mode!=="disabled"?`abre ${describeSched(bz.open)}`:"sem auto")+", "+(bz.close?.mode!=="disabled"?`fecha ${describeSched(bz.close)}`:"sem auto");return `<div class="brisa-zone ${moving?'moving':''}"><div class="brisa-top" onclick="openBrisaZone('${z.name}')"><div class="brisa-icon">🪟</div><div class="brisa-info"><div class="n">${z.label}</div><div class="s">${stateTxt} · ${schedTxt}</div></div><div class="brisa-pos">${posPct==null?'—':posPct}<span class="pct">%</span></div></div>${posPct!=null?`<div class="brisa-bar"><div class="brisa-bar-fill" style="width:${posPct}%"></div></div>`:''}<div class="brisa-controls"><button class="brisa-btn" onclick="brisaOpen('${z.name}')"><span class="ico">⬆</span><span>abrir</span></button><button class="brisa-btn stop" onclick="brisaStop('${z.name}')"><span class="ico">■</span><span>parar</span></button><button class="brisa-btn" onclick="brisaClose('${z.name}')"><span class="ico">⬇</span><span>fechar</span></button></div></div>`;}).join("");}
+function renderBrisasView(){const root=document.getElementById("brisas-zones");if(!root)return;root.innerHTML=BRISA_ZONES.map(z=>{const pos=brisaPos(z);const state=brisaState(z);const moving=state==="open"||state==="close";const posPct=(pos!=null)?Math.min(100,Math.max(0,pos)):null;const stateTxt=state==="open"?"a abrir":state==="close"?"a fechar":pos==null?"?":pos>=95?"aberto":pos<=5?"fechado":`${posPct}% aberto`;const bz=config.brisas?.zones?.[z.name]||{};const schedTxt=(bz.open?.mode!=="disabled"?`abre ${describeSched(bz.open)}`:"sem auto")+", "+(bz.close?.mode!=="disabled"?`fecha ${describeSched(bz.close)}`:"sem auto");return `<div class="brisa-zone ${moving?'moving':''}"><div class="brisa-top" onclick="openBrisaZone('${z.name}')"><div class="brisa-window"><div class="blind" style="height:${posPct==null?0:(100-posPct)}%;"></div>${posPct!=null?`<span class="pct-label">${posPct}%</span>`:""}</div><div class="brisa-info"><div class="n">${z.label}</div><div class="s">${stateTxt} · ${schedTxt}</div></div><div class="brisa-pos">${posPct==null?'—':posPct}<span class="pct">%</span></div></div>${posPct!=null?`<div class="brisa-bar"><div class="brisa-bar-fill" style="width:${posPct}%"></div></div>`:''}<div class="brisa-controls"><button class="brisa-btn" onclick="brisaOpen('${z.name}')"><i class="ti ti-chevron-up"></i><span>abrir</span></button><button class="brisa-btn stop" onclick="brisaStop('${z.name}')"><i class="ti ti-player-stop"></i><span>parar</span></button><button class="brisa-btn" onclick="brisaClose('${z.name}')"><i class="ti ti-chevron-down"></i><span>fechar</span></button></div></div>`;}).join("");}
 function describeSched(s){if(!s||s.mode==="disabled")return"";if(s.mode==="fixed")return s.time||"--:--";if(s.mode==="sunrise"){const off=s.offset||0;return `nascer${off?(off>0?'+':'')+off+'min':''}`;}if(s.mode==="sunset"){const off=s.offset||0;return `pôr${off?(off>0?'+':'')+off+'min':''}`;}return"";}
 
 function openBrisaZone(name){editBrisaZone=name;document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("view-brisa-zone").classList.add("active");renderBrisaZoneDetail();}
 function closeBrisaZone(){switchView("brisas");}
-function renderBrisaZoneDetail(){const z=BRISA_ZONES.find(x=>x.name===editBrisaZone);if(!z)return;const pos=brisaPos(z);const posPct=(pos!=null)?Math.min(100,Math.max(0,pos)):null;const bz=config.brisas?.zones?.[z.name]||{open:{mode:"disabled"},close:{mode:"disabled"}};const root=document.getElementById("brisa-zone-content");root.innerHTML=`<div class="detail-head"><button class="detail-back" onclick="closeBrisaZone()">‹ voltar</button></div><div class="eyebrow">BRISA</div><div class="detail-title">${z.label}</div><div class="detail-sub">${posPct==null?'estado desconhecido':posPct>=95?'aberta':posPct<=5?'fechada':posPct+'% aberta'}</div>${posPct!=null?`<div class="brisa-bar" style="margin-bottom:14px;"><div class="brisa-bar-fill" style="width:${posPct}%"></div></div>`:''}<div class="brisa-controls" style="margin-bottom:18px;"><button class="brisa-btn" onclick="brisaOpen('${z.name}')"><span class="ico">⬆</span><span>abrir</span></button><button class="brisa-btn stop" onclick="brisaStop('${z.name}')"><span class="ico">■</span><span>parar</span></button><button class="brisa-btn" onclick="brisaClose('${z.name}')"><span class="ico">⬇</span><span>fechar</span></button></div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:18px;"><button class="chip" onclick="brisaGoTo('${z.name}',25)">25%</button><button class="chip" onclick="brisaGoTo('${z.name}',50)">50%</button><button class="chip" onclick="brisaGoTo('${z.name}',75)">75%</button></div>${renderSchedBlock(z.name,'open',bz.open||{mode:'disabled'})}${renderSchedBlock(z.name,'close',bz.close||{mode:'disabled'})}`;}
+function renderBrisaZoneDetail(){const z=BRISA_ZONES.find(x=>x.name===editBrisaZone);if(!z)return;const pos=brisaPos(z);const posPct=(pos!=null)?Math.min(100,Math.max(0,pos)):null;const bz=config.brisas?.zones?.[z.name]||{open:{mode:"disabled"},close:{mode:"disabled"}};const root=document.getElementById("brisa-zone-content");root.innerHTML=`<div class="detail-head"><button class="detail-back" onclick="closeBrisaZone()">‹ voltar</button></div><div class="eyebrow">BRISA</div><div class="detail-title">${z.label}</div><div class="detail-sub">${posPct==null?'estado desconhecido':posPct>=95?'aberta':posPct<=5?'fechada':posPct+'% aberta'}</div>${posPct!=null?`<div class="brisa-bar" style="margin-bottom:14px;"><div class="brisa-bar-fill" style="width:${posPct}%"></div></div>`:''}<div class="brisa-controls" style="margin-bottom:18px;"><button class="brisa-btn" onclick="brisaOpen('${z.name}')"><i class="ti ti-chevron-up"></i><span>abrir</span></button><button class="brisa-btn stop" onclick="brisaStop('${z.name}')"><i class="ti ti-player-stop"></i><span>parar</span></button><button class="brisa-btn" onclick="brisaClose('${z.name}')"><i class="ti ti-chevron-down"></i><span>fechar</span></button></div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:18px;"><button class="chip" onclick="brisaGoTo('${z.name}',25)">25%</button><button class="chip" onclick="brisaGoTo('${z.name}',50)">50%</button><button class="chip" onclick="brisaGoTo('${z.name}',75)">75%</button></div>${renderSchedBlock(z.name,'open',bz.open||{mode:'disabled'})}${renderSchedBlock(z.name,'close',bz.close||{mode:'disabled'})}`;}
 function renderSchedBlock(name,which,s){const label=which==='open'?'Abrir':'Fechar';const modes=which==='open'?[['disabled','manual'],['fixed','hora fixa'],['sunrise','nascer-do-sol']]:[['disabled','manual'],['fixed','hora fixa'],['sunset','pôr-do-sol']];return `<div class="sched-card"><div class="hdr">${label} automático</div><div class="sched-mode-row">${modes.map(m=>`<button class="sched-chip ${s.mode===m[0]?'active':''}" onclick="setSchedMode('${name}','${which}','${m[0]}')">${m[1]}</button>`).join("")}</div>${s.mode==='fixed'?`<div class="schedule-edit"><label>Hora</label><input type="time" value="${s.time||'08:00'}" onchange="setSchedTime('${name}','${which}',this.value)"></div>`:s.mode==='sunrise'||s.mode==='sunset'?`<div class="schedule-edit"><label>Offset (minutos antes/depois)</label><input type="number" value="${s.offset||0}" min="-90" max="90" step="5" onchange="setSchedOffset('${name}','${which}',this.value)"></div>`:'<div class="muted" style="font-size:12px;">Sem automatismo. Só controlo manual.</div>'}</div>`;}
 async function setSchedMode(name,which,mode){if(!config.brisas)config.brisas={zones:{}};if(!config.brisas.zones[name])config.brisas.zones[name]={};if(!config.brisas.zones[name][which])config.brisas.zones[name][which]={};config.brisas.zones[name][which].mode=mode;try{await saveConfig();renderBrisaZoneDetail();}catch(e){toast("Erro: "+e.message,"error");}}
 async function setSchedTime(name,which,time){config.brisas.zones[name][which].time=time;try{await saveConfig();toast("Guardado","success");}catch(e){toast("Erro: "+e.message,"error");}}
 async function setSchedOffset(name,which,v){config.brisas.zones[name][which].offset=parseInt(v)||0;try{await saveConfig();toast("Guardado","success");}catch(e){toast("Erro: "+e.message,"error");}}
 
-function renderDashboard(){const root=document.getElementById("home-content");if(!weatherData){root.innerHTML='<div class="empty"><span class="spinner"></span> a carregar…</div>';return;}const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);const sunset=weatherData.daily.sunset?.[idx]?.slice(11)??"?";const sunrise=weatherData.daily.sunrise?.[idx]?.slice(11)??"?";const mm=weatherData.daily.precipitation_sum?.[idx]||0;const prob=weatherData.daily.precipitation_probability_max?.[idx]||0;const r=rainLabel(mm,prob);const onLights=LIGHT_ZONES.filter(z=>lightIsOn(z)).length;const activeR=activeZone();const todayLogs=getLogForDate(today);const watered=todayLogs.length>0&&todayLogs[todayLogs.length-1].decision!=="SKIP";const plan=idx>=0?decideForDay(idx):null;const vac=config.lighting?.vacation_mode;root.innerHTML=`
-    <div class="eyebrow">HOJE</div>
-    <div class="detail-title" style="margin-bottom:4px;">${new Date().toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long"})}</div>
-    <div class="detail-sub" style="margin-bottom:18px;">Esposende</div>
-    ${activeR?`<div class="banner banner-live" style="margin:0 0 12px;"><span class="ico">●</span><span>A regar: <strong>${activeR.label}</strong></span></div>`:''}
+function renderDashboard(){const root=document.getElementById("home-content");if(!weatherData){root.innerHTML='<div class="skel-card"><div class="skel skel-line sm"></div><div class="skel skel-line lg"></div><div class="skel skel-line md"></div></div><div class="skel-card"><div class="skel skel-line md"></div></div><div class="skel-card"><div class="skel skel-line lg"></div><div class="skel skel-line md"></div></div>';return;}const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);const sunset=weatherData.daily.sunset?.[idx]?.slice(11)??"?";const sunrise=weatherData.daily.sunrise?.[idx]?.slice(11)??"?";const mm=weatherData.daily.precipitation_sum?.[idx]||0;const prob=weatherData.daily.precipitation_probability_max?.[idx]||0;const r=rainLabel(mm,prob);const onLights=LIGHT_ZONES.filter(z=>lightIsOn(z)).length;const activeR=activeZone();const todayLogs=getLogForDate(today);const watered=todayLogs.length>0&&todayLogs[todayLogs.length-1].decision!=="SKIP";const plan=idx>=0?decideForDay(idx):null;const vac=config.lighting?.vacation_mode;const ne=computeNextEvent();const todayLabel="Hoje";const dateLabel=new Date().toLocaleDateString("pt-PT",{day:"numeric",month:"long"});root.innerHTML=`
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+      <div class="detail-title" style="margin:0;">${todayLabel}</div>
+      <div class="detail-sub" style="margin:0;">${dateLabel}</div>
+    </div>
+    ${activeR?`<div class="banner banner-live" style="margin:0 0 12px;"><i class="ti ti-droplet"></i><span>A regar: <strong>${activeR.label}</strong></span></div>`:''}
+    ${ne?`<div class="next-event"><div class="ne-ico"><i class="ti ti-${ne.icon}"></i></div><div style="flex:1;"><div class="ne-time">${ne.time}</div><div class="ne-desc">${ne.desc}</div></div></div>`:''}
+    <div class="group-label">cenários</div>
+    <div class="scenarios">
+      <button class="scenario s-out" onclick="cenarioSair()"><i class="ti ti-door-exit"></i><span class="lbl">Sair</span></button>
+      <button class="scenario s-back" onclick="cenarioVoltar()"><i class="ti ti-door-enter"></i><span class="lbl">Voltar</span></button>
+      <button class="scenario s-dinner" onclick="cenarioJantar()"><i class="ti ti-tools-kitchen-2"></i><span class="lbl">Jantar</span></button>
+      <button class="scenario s-sleep" onclick="cenarioDormir()"><i class="ti ti-moon"></i><span class="lbl">Dormir</span></button>
+    </div>
+    <div class="group-label">estado do dia</div>
     <div class="dash-row">
       <div class="dash-card"><div class="ttl">Pôr-do-sol</div><div class="big">${sunset}</div><div class="sub">nasce ${sunrise}</div></div>
       <div class="dash-card"><div class="ttl">Chuva hoje</div><div class="big">${mm.toFixed(1)}mm</div><div class="sub">${prob}% chance</div></div>
     </div>
-    <div class="dash-card">
-      <div class="ttl">Rega</div>
-      <div class="big">${watered?"✓ regou":plan?.decision==="SKIP"?"⏭ skip hoje":`agendado ${config.start_time}`}</div>
+    <div class="dash-card" style="border-left:4px solid var(--water);">
+      <div class="ttl"><i class="ti ti-droplet" style="color:var(--water);"></i> Rega</div>
+      <div class="big">${watered?"✓ regou":plan?.decision==="SKIP"?"skip hoje":`agendado ${config.start_time}`}</div>
       <div class="sub">${watered?`total ${Math.round(todayLogs.reduce((s,e)=>s+(e.total_duration_min||0),0))}min`:plan?.decision==="SKIP"?"chuva suficiente":`${totalMinutesForDay(plan?.factor||1)}min total`}</div>
     </div>
-    <div class="dash-card">
-      <div class="ttl">Iluminação</div>
+    <div class="dash-card" style="border-left:4px solid var(--light);">
+      <div class="ttl"><i class="ti ti-bulb" style="color:var(--light);"></i> Iluminação</div>
       <div class="big">${onLights} ${onLights===1?'zona ligada':'zonas ligadas'}</div>
-      <div class="sub">acende ao pôr-do-sol (${sunset}${config.lighting?.sunset_offset_min?` ${config.lighting.sunset_offset_min>0?'+':''}${config.lighting.sunset_offset_min}min`:''})</div>
+      <div class="sub">acende ao pôr-do-sol (${sunset})</div>
     </div>
-    <div class="vacation-card ${vac?'on':''}">
-      <span class="ic">${vac?'🌴':'🏠'}</span>
-      <div style="flex:1;"><div class="lbl">Modo férias ${vac?'ativo':''}</div><div class="sub">${vac?'presença simulada nas luzes':'simula presença quando ativado'}</div></div>
+    ${renderTimeline()}
+    <div class="vacation-card ${vac?'on':''}" style="${!vac?'opacity:0.65;':''}">
+      <span class="ic"><i class="ti ti-${vac?'palm-tree':'home'}"></i></span>
+      <div style="flex:1;"><div class="lbl">Modo férias ${vac?'ativo':''}</div><div class="sub">${vac?'presença simulada':'simula presença quando ativado'}</div></div>
       <div class="toggle ${vac?'on':''}" onclick="toggleVacation()"></div>
     </div>
-    <div class="muted center" style="font-size:11px;margin-top:14px;">Tabs em baixo: <strong>iluminação</strong> e <strong>rega</strong></div>
   `;}
+
+function computeNextEvent(){if(!weatherData)return null;const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);if(idx<0)return null;const sunsetStr=weatherData.daily.sunset?.[idx];if(!sunsetStr)return null;const now=new Date();const events=[];const sunset=new Date(sunsetStr);sunset.setMinutes(sunset.getMinutes()+(config.lighting?.sunset_offset_min||0));if(sunset>now)events.push({time:sunset,icon:"bulb",desc:"acendem luzes exteriores"});const bz=config.brisas?.zones||{};for(const [name,b] of Object.entries(bz)){if(!b.enabled)continue;const z=BRISA_ZONES.find(x=>x.name===name);if(!z)continue;for(const which of ["open","close"]){const s=b[which];if(!s||s.mode==="disabled")continue;let t;if(s.mode==="fixed"&&s.time){const[h,m]=s.time.split(":").map(Number);t=new Date();t.setHours(h,m+(s.offset||0),0,0);}else if(s.mode==="sunrise"&&weatherData.daily.sunrise?.[idx]){t=new Date(weatherData.daily.sunrise[idx]);t.setMinutes(t.getMinutes()+(s.offset||0));}else if(s.mode==="sunset"){t=new Date(sunsetStr);t.setMinutes(t.getMinutes()+(s.offset||0));}if(t&&t>now)events.push({time:t,icon:"window",desc:`${which==="open"?"abre":"fecha"} ${z.label.toLowerCase()}`});}}events.sort((a,b)=>a.time-b.time);if(events.length===0)return null;const e=events[0];return{time:e.time.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}),icon:e.icon,desc:e.desc};}
+
+function renderTimeline(){if(!weatherData)return"";const today=new Date().toISOString().slice(0,10);const idx=weatherData.daily.time.indexOf(today);if(idx<0)return"";const sunsetStr=weatherData.daily.sunset?.[idx];const sunriseStr=weatherData.daily.sunrise?.[idx];const events=[];if(plan_water_today_event())events.push(plan_water_today_event());if(sunsetStr){const t=new Date(sunsetStr);t.setMinutes(t.getMinutes()+(config.lighting?.sunset_offset_min||0));events.push({type:"light",time:t,h:t.getHours()+t.getMinutes()/60,lbl:"luzes ON"});const offw=(config.lighting?.off_time_weekdays||"01:00").split(":").map(Number);events.push({type:"light",time:null,h:offw[0]+offw[1]/60+(offw[0]<3?24:0),lbl:"luzes OFF"});}const brz=config.brisas?.zones||{};for(const[name,b]of Object.entries(brz)){if(!b.enabled)continue;for(const which of["open","close"]){const s=b[which];if(!s||s.mode==="disabled")continue;let h;if(s.mode==="fixed"&&s.time){const[hh,mm]=s.time.split(":").map(Number);h=hh+mm/60+(s.offset||0)/60;}else if(s.mode==="sunrise"&&sunriseStr){const t=new Date(sunriseStr);t.setMinutes(t.getMinutes()+(s.offset||0));h=t.getHours()+t.getMinutes()/60;}else if(s.mode==="sunset"&&sunsetStr){const t=new Date(sunsetStr);t.setMinutes(t.getMinutes()+(s.offset||0));h=t.getHours()+t.getMinutes()/60;}if(h!=null)events.push({type:"brisa",h:h,lbl:""});}}const now=new Date();const nowH=now.getHours()+now.getMinutes()/60;const hours=[0,6,12,18,24];return `<div class="timeline"><div class="ttl">Linha do dia</div><div class="timeline-track">${hours.map(h=>`<div class="timeline-hour" style="left:${(h/24)*100}%"></div><div class="timeline-hour-lbl" style="left:${(h/24)*100}%">${String(h).padStart(2,"0")}h</div>`).join("")}${events.filter(e=>e.h>=0&&e.h<=24).map(e=>`<div class="timeline-event te-${e.type}" style="left:${(e.h/24)*100}%;width:6px;" title="${e.lbl||""}"></div>`).join("")}<div class="timeline-now" style="left:${(nowH/24)*100}%"></div></div><div style="margin-top:22px;font-size:11px;color:var(--mut);display:flex;gap:14px;justify-content:center;"><span><span style="display:inline-block;width:10px;height:10px;background:var(--water);border-radius:2px;vertical-align:middle;"></span> rega</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--light);border-radius:2px;vertical-align:middle;"></span> luzes</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--brisa);border-radius:2px;vertical-align:middle;"></span> brisas</span></div></div>`;}
+function plan_water_today_event(){if(!workflowCrons||workflowCrons.length===0)return null;const c=workflowCrons[0];const[m,h]=c.split(/\s+/).slice(0,2).map(Number);const l=utcToLisbon(h,m);return{type:"water",h:l.h+l.m/60,lbl:"rega"};}
 
 
 function toast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast show "+type;clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),3000);}
 
-function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.getElementById("gate-setup").classList.remove("hidden");return;}document.getElementById("app").classList.remove("hidden");refreshAll();setInterval(async()=>{if(currentView==="manual"||activeZone()){await refreshRelays();renderBanners();if(currentView==="manual")renderManual();}},8000);}
+function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.getElementById("gate-setup").classList.remove("hidden");return;}document.getElementById("app").classList.remove("hidden");refreshAll().then(()=>{applyAutoTheme();setupPullToRefresh();});setInterval(async()=>{if(currentView==="manual"||activeZone()){await refreshRelays();renderBanners();if(currentView==="manual")renderManual();}},8000);setInterval(applyAutoTheme,5*60*1000);}
 
 window.addEventListener("DOMContentLoaded",()=>{if(localStorage.getItem("auth_ok")==="1")enterApp();else document.getElementById("gate-login").classList.remove("hidden");});
 </script>
