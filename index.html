@@ -380,4 +380,11 @@ function renderBanners(){const root=document.getElementById("banners");let html=
 
 async function refreshAll(){const btn=document.getElementById("refresh-btn");btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;try{await Promise.all([loadConfig(),fetchWeather(),loadLog(),loadSchedule(),loadPause(),refreshRelays()]);renderBanners();if(currentView==="home")renderHome();else if(currentView==="manual")renderManual();else if(currentView==="settings")renderSettings();}catch(e){toast("Erro: "+e.message,"error");}finally{btn.innerHTML="↻";btn.disabled=false;}}
 
-function toast(msg,type=""){const t=document.getElementById("toast"
+function toast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast show "+type;clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),3000);}
+
+function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.getElementById("gate-setup").classList.remove("hidden");return;}document.getElementById("app").classList.remove("hidden");refreshAll();setInterval(async()=>{if(currentView==="manual"||activeZone()){await refreshRelays();renderBanners();if(currentView==="manual")renderManual();}},8000);}
+
+window.addEventListener("DOMContentLoaded",()=>{if(localStorage.getItem("auth_ok")==="1")enterApp();else document.getElementById("gate-login").classList.remove("hidden");});
+</script>
+</body>
+</html>
