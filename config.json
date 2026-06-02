@@ -7,7 +7,7 @@
     "entrada": 10
   },
   "lighting": {
-    "sunset_offset_min": 0,
+    "sunset_offset_min": 5,
     "off_time_weekdays": "01:00",
     "off_time_weekend": "02:30",
     "weekend_days": [
