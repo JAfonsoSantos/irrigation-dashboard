@@ -971,4 +971,18 @@ function enterApp() {
     document.getElementById("setup").style.display = "block";
   } else {
     document.getElementById("app").style.display = "block";
-    refreshAll(
+    refreshAll();
+    pollHandle = setInterval(pollTick, pollIntervalMs);
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (sessionStorage.getItem("auth_ok") === "1") {
+    enterApp();
+  } else {
+    document.getElementById("login").style.display = "block";
+  }
+});
+</script>
+</body>
+</html>

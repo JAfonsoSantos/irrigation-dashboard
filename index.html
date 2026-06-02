@@ -762,4 +762,10 @@ function plan_water_today_event(){if(!workflowCrons||workflowCrons.length===0)re
 
 function toast(msg,type=""){const t=document.getElementById("toast");t.textContent=msg;t.className="toast show "+type;clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),3000);}
 
-function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.ge
+function enterApp(){if(!SHELLY_KEY||!GH_TOKEN){document.getElementById("gate-setup").classList.remove("hidden");return;}document.getElementById("app").classList.remove("hidden");refreshAll().then(()=>{applyAutoTheme();setupPullToRefresh();});setInterval(async()=>{if(currentView==="manual"||activeZone()){await refreshRelays();renderBanners();if(currentView==="manual")renderManual();}},8000);setInterval(applyAutoTheme,5*60*1000);}
+
+document.addEventListener("click",e=>{const tt=document.getElementById("tl-tooltip");if(tt&&tt.style.display==="block"&&!e.target.classList?.contains("timeline-event")){tt.style.display="none";}});
+window.addEventListener("DOMContentLoaded",()=>{if(localStorage.getItem("auth_ok")==="1")enterApp();else document.getElementById("gate-login").classList.remove("hidden");});
+</script>
+</body>
+</html>
