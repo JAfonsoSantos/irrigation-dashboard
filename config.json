@@ -250,5 +250,6 @@
         }
       }
     }
-  }
+  },
+  "cron_window_margin_min": 330
 }
