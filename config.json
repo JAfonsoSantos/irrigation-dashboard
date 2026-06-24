@@ -49,9 +49,9 @@
           "offset": 15
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": -15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "lavandaria": {
@@ -62,9 +62,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "salamandra": {
@@ -76,7 +76,7 @@
         },
         "close": {
           "mode": "fixed",
-          "time": "21:00",
+          "time": "02:00",
           "offset": 0
         }
       },
@@ -89,7 +89,7 @@
         },
         "close": {
           "mode": "fixed",
-          "time": "21:00",
+          "time": "02:00",
           "offset": 0
         }
       },
@@ -102,7 +102,7 @@
         },
         "close": {
           "mode": "fixed",
-          "time": "21:00",
+          "time": "02:00",
           "offset": 0
         }
       },
@@ -115,7 +115,7 @@
         },
         "close": {
           "mode": "fixed",
-          "time": "21:00",
+          "time": "02:00",
           "offset": 0
         }
       },
@@ -128,7 +128,7 @@
         },
         "close": {
           "mode": "fixed",
-          "time": "21:00",
+          "time": "02:00",
           "offset": 0
         }
       },
@@ -140,9 +140,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "wc_principal": {
@@ -153,9 +153,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "quarto_mercedes": {
@@ -166,9 +166,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "wc_meninas": {
@@ -179,9 +179,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "blackout_principal": {
@@ -192,9 +192,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "quarto_visitas_frente": {
@@ -205,9 +205,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "quarto_visitas_tras": {
@@ -218,9 +218,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "escritorio": {
@@ -231,9 +231,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       },
       "closet": {
@@ -244,9 +244,9 @@
           "offset": 0
         },
         "close": {
-          "mode": "sunset",
-          "time": "21:00",
-          "offset": 15
+          "mode": "fixed",
+          "time": "02:00",
+          "offset": 0
         }
       }
     }
